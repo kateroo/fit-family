@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summer Streak Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        .calendar-day {
+            aspect-ratio: 1/1;
+        }
+        /* Simple fade-in animation */
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fade-in 0.5s ease-out forwards;
+        }
+        /* Fade in and out for notifications */
+        @keyframes fade-in-out {
+            0% { opacity: 0; transform: translateY(20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(20px); }
+        }
+        .animate-fade-in-out {
+            animation: fade-in-out 5s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50">
+
+    <div class="min-h-screen font-sans p-4 sm:p-6 lg:p-8">
+        <div class="max-w-4xl mx-auto">
+            <!-- Header -->
+            <header class="text-center mb-8">
+                <h1 class="text-4xl sm:text-5xl font-bold text-blue-900">Summer Streak Challenge</h1>
+                <p class="text-lg text-blue-800/90 mt-2">June 8, 2025 - September 30, 2025</p>
+                <p id="today-date" class="text-md text-slate-500 mt-1"></p>
+            </header>
+
+            <!-- Daily Entry Form Container -->
+            <div id="form-container"></div>
+
+            <!-- Leaderboard -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Leaderboard</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-slate-50">
+                            <tr class="border-b-2 border-slate-200">
+                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider">Rank</th>
+                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider">Name</th>
+                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider text-center">Daily Status</th>
+                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider text-center">Streak</th>
+                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider text-right">Points</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body">
+                             <tr><td colspan="5" class="text-center p-8 text-slate-500">Loading Tracker...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Global Message/Alert Container -->
+            <div id="message-container"></div>
+        </div>
+    </div>
+
+    <!-- Edit Calendar Modal -->
+    <div id="calendar-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="calendar-modal-title" class="text-2xl font-bold text-blue-900">Edit Entries</h2>
+                <button id="calendar-close-btn" class="text-slate-500 hover:text-slate-800 text-3xl">&times;</button>
+            </div>
+            <div id="calendar-container" class="space-y-6">
+                <!-- Calendars will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Minutes Summary Modal -->
+    <div id="minutes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
+            <h2 id="minutes-modal-title" class="text-2xl font-bold text-blue-900 mb-4">Exercise Summary</h2>
+            <p id="minutes-modal-content" class="text-5xl font-bold text-slate-700 mb-2">0</p>
+            <p class="text-slate-500 mb-6">Total Minutes</p>
+            <p id="minutes-modal-detail" class="text-lg text-slate-600 mb-6"></p>
+            <button id="minutes-close-btn" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800">Close</button>
+        </div>
+    </div>
+
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, setDoc, getDocs, getDoc, query, where, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+
+        // --- Configuration and State ---
+        const familyMembers = ["Von", "Bob", "Mom", "Kate", "Jen"];
+        const today = new Date('2025-06-08T12:00:00Z');
+        const challengeStartDate = new Date('2025-06-08T00:00:00Z');
+        const challengeEndDate = new Date('2025-09-30T23:59:59Z');
+        const todayString = today.toISOString().split('T')[0];
+        const isChallengeActive = today >= challengeStartDate && today <= challengeEndDate;
+
+        // App state
+        let db;
+        let auth;
+        let users = [];
+        let entries = {};
+        let selectedUser = familyMembers[0];
+        let exercisedToday = null;
+
+        // DOM elements
+        const formContainer = document.getElementById('form-container');
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        const todayDateEl = document.getElementById('today-date');
+        const messageContainer = document.getElementById('message-container');
+        const calendarModal = document.getElementById('calendar-modal');
+        const calendarModalTitle = document.getElementById('calendar-modal-title');
+        const calendarContainer = document.getElementById('calendar-container');
+        const calendarCloseBtn = document.getElementById('calendar-close-btn');
+        const minutesModal = document.getElementById('minutes-modal');
+        const minutesModalTitle = document.getElementById('minutes-modal-title');
+        const minutesModalContent = document.getElementById('minutes-modal-content');
+        const minutesModalDetail = document.getElementById('minutes-modal-detail');
+        const minutesCloseBtn = document.getElementById('minutes-close-btn');
+
+        // --- Firebase Configuration ---
+        // This configuration is specific to your Firebase project.
+        const firebaseConfig = {
+            apiKey: "AIzaSyAvk0bvFtWE3SDUaOWntFMgNtjbMtgR4OQ",
+            authDomain: "fun-fit-a465a.firebaseapp.com",
+            projectId: "fun-fit-a465a",
+            storageBucket: "fun-fit-a465a.firebasestorage.app",
+            messagingSenderId: "221581983535",
+            appId: "1:221581983535:web:ba7051794ce3b1f3c32bda"
+        };
+        const appId = firebaseConfig.projectId; // Use projectId for database paths
+        const initialAuthToken = null; // No custom token needed for this public app.
+        
+        // --- Helper Functions ---
+        function showMessage(type, text) {
+            const color = type === 'success' ? 'bg-blue-600' : 'bg-red-500';
+            messageContainer.innerHTML = `<div class="fixed bottom-5 right-5 p-4 rounded-lg shadow-xl text-white animate-fade-in-out ${color}">${text}</div>`;
+            setTimeout(() => { messageContainer.innerHTML = ''; }, 5000);
+        }
+        
+        function getStreakStyle(streak) {
+            if (streak >= 30) return 'font-bold text-blue-500';
+            if (streak >= 14) return 'font-bold text-orange-500';
+            if (streak >= 7) return 'font-bold text-slate-800';
+            return 'font-medium text-slate-700';
+        }
+        
+        // --- Rendering ---
+        function renderLeaderboard() {
+            const leaderboardData = [...users]
+                .map(user => ({ ...user, todayEntry: entries[user.name] }))
+                .sort((a, b) => b.points - a.points);
+            
+            leaderboardBody.innerHTML = '';
+
+            if (leaderboardData.length === 0) {
+                 leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500">Waiting for players...</td></tr>';
+                 return;
+            }
+
+            leaderboardData.forEach((user, index) => {
+                const row = document.createElement('tr');
+                row.className = 'border-b border-slate-100 last:border-none';
+                
+                const dailyStatus = user.todayEntry ? (user.todayEntry.exercised ? '⭐' : '❌') : '…';
+                const streakText = user.currentStreak > 0 ? `${user.currentStreak} day${user.currentStreak > 1 ? 's' : ''}` : '-';
+                const streakIcon = user.currentStreak >= 3 ? `<span class="ml-2">🔥</span>` : '';
+                
+                row.innerHTML = `
+                    <td class="p-3 font-bold text-lg text-slate-700">${index + 1}</td>
+                    <td class="p-3 text-lg ${getStreakStyle(user.currentStreak)}">
+                        <div class="flex items-center">
+                            <button data-user="${user.name}" class="name-btn text-left hover:underline focus:outline-none">${user.name}</button>
+                            <button data-user="${user.name}" class="edit-btn ml-8 text-slate-400 hover:text-blue-600">✏️</button>
+                        </div>
+                    </td>
+                    <td class="p-3 text-center text-2xl">${dailyStatus}</td>
+                    <td class="p-3 text-center text-lg font-medium text-slate-600">${streakText}${streakIcon}</td>
+                    <td class="p-3 text-right text-xl font-bold text-blue-700">${user.points}</td>
+                `;
+                leaderboardBody.appendChild(row);
+            });
+            
+            document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => openCalendarModal(btn.dataset.user)));
+            document.querySelectorAll('.name-btn').forEach(btn => btn.addEventListener('click', () => openMinutesModal(btn.dataset.user)));
+        }
+        
+        function renderForm() {
+             if (!isChallengeActive) {
+                formContainer.innerHTML = `<div class="bg-white rounded-xl shadow-lg p-6 text-center mb-8"><h2 class="text-2xl font-bold text-blue-900 mb-4">The Challenge is Over!</h2><p class="text-slate-600">Thanks for participating. Come back next year!</p></div>`;
+                return;
+            }
+
+            const userOptions = familyMembers.map(name => `<option value="${name}" ${name === selectedUser ? 'selected' : ''}>${name}</option>`).join('');
+            const hasSubmitted = !!entries[selectedUser];
+
+            formContainer.innerHTML = `
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                    <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Log Today's Exercise</h2>
+                    <form id="entry-form" class="space-y-6">
+                        <div>
+                            <label for="user-select" class="block text-sm font-medium text-slate-700 mb-1">Who are you?</label>
+                            <select id="user-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">${userOptions}</select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-2">Did you earn a gold star today? <span class="text-red-500">*</span></label>
+                            <div class="flex items-center space-x-4">
+                                <button type="button" id="yes-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'yes' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">Yes</button>
+                                <button type="button" id="no-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'no' ? 'bg-red-500 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">No</button>
+                            </div>
+                        </div>
+                        <div id="optional-fields" class="${exercisedToday === 'yes' ? 'space-y-6 animate-fade-in' : 'hidden'}">
+                             <div>
+                                <label for="minutes" class="block text-sm font-medium text-slate-700">How many minutes? (Optional)</label>
+                                <input type="number" id="minutes" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 30">
+                            </div>
+                            <div>
+                                <label for="notes" class="block text-sm font-medium text-slate-700">What did you do? (Optional)</label>
+                                <textarea id="notes" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Went for a bike ride"></textarea>
+                            </div>
+                        </div>
+                        <div>
+                            <button type="submit" id="submit-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400" ${hasSubmitted || exercisedToday === null ? 'disabled' : ''}>
+                                ${hasSubmitted ? 'Entry Submitted for Today' : 'Save My Entry'}
+                            </button>
+                        </div>
+                    </form>
+                </div>`;
+            addFormEventListeners();
+        }
+
+        function generateCalendar(month, year, userEntries, userName) {
+            const date = new Date(year, month, 1);
+            const monthName = date.toLocaleString('default', { month: 'long' });
+            let html = `<div class="p-4 border rounded-lg"><h3 class="text-xl font-bold text-slate-700 text-center mb-4">${monthName} ${year}</h3>`;
+            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            html += `<div class="calendar-grid mb-2">${daysOfWeek.map(d => `<div class="font-bold text-slate-500 text-center text-sm">${d}</div>`).join('')}</div>`;
+
+            html += '<div class="calendar-grid">';
+            // Add blank days for the first day of the month
+            for (let i = 0; i < date.getDay(); i++) {
+                html += '<div></div>';
+            }
+
+            while (date.getMonth() === month) {
+                const dayStr = new Date(date.valueOf()).toISOString().split('T')[0];
+                const entry = userEntries.find(e => e.date === dayStr);
+                let dayClass = 'bg-slate-100 hover:bg-blue-100 cursor-pointer';
+                let content = `<span class="text-slate-600">${date.getDate()}</span>`;
+
+                if(entry) {
+                    if (entry.exercised) {
+                        dayClass = 'bg-amber-200 hover:bg-amber-300 cursor-pointer';
+                        content = '⭐';
+                    } else {
+                        dayClass = 'bg-red-200 hover:bg-red-300 cursor-pointer';
+                        content = '❌';
+                    }
+                }
+                
+                const fullDate = new Date(date);
+                if (fullDate < challengeStartDate || fullDate > challengeEndDate || fullDate > today) {
+                    dayClass = 'bg-slate-50 text-slate-300';
+                    content = `<span class="text-slate-400">${date.getDate()}</span>`;
+                    html += `<div class="flex items-center justify-center rounded-lg calendar-day ${dayClass}">${content}</div>`;
+                } else {
+                     html += `<div data-date="${dayStr}" data-user="${userName}" class="edit-day-btn flex items-center justify-center rounded-lg calendar-day ${dayClass}">${content}</div>`;
+                }
+                
+                date.setDate(date.getDate() + 1);
+            }
+            html += '</div></div>';
+            return html;
+        }
+
+
+        // --- Event Handling ---
+        function addFormEventListeners() {
+            document.getElementById('user-select').addEventListener('change', (e) => {
+                selectedUser = e.target.value;
+                exercisedToday = null;
+                renderForm();
+            });
+            document.getElementById('yes-btn').addEventListener('click', () => { exercisedToday = 'yes'; renderForm(); });
+            document.getElementById('no-btn').addEventListener('click', () => { exercisedToday = 'no'; renderForm(); });
+            document.getElementById('entry-form').addEventListener('submit', handleFormSubmit);
+        }
+
+        async function handleFormSubmit(e) {
+            e.preventDefault();
+            if (exercisedToday === null) return;
+            
+            const exercised = exercisedToday === 'yes';
+            const minutesVal = document.getElementById('minutes')?.value || "";
+            const notesVal = document.getElementById('notes')?.value || "";
+            
+            const entryRef = doc(db, `artifacts/${appId}/public/data/entries`, `${selectedUser}_${todayString}`);
+            await setDoc(entryRef, {
+                name: selectedUser,
+                date: todayString,
+                exercised: exercised,
+                minutes: minutesVal ? parseInt(minutesVal, 10) : 0,
+                notes: notesVal
+            });
+            
+            await recalculateAndSaveUserStats(selectedUser);
+            showMessage('success', `Entry saved for ${selectedUser}.`);
+            exercisedToday = null;
+        }
+
+        async function openCalendarModal(userName) {
+            calendarModalTitle.textContent = `Edit Entries for ${userName}`;
+            calendarContainer.innerHTML = '<div class="text-center p-8">Loading calendar...</div>';
+            calendarModal.classList.remove('hidden');
+            calendarModal.classList.add('flex');
+
+            const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
+            const q = query(entriesRef, where("name", "==", userName));
+            const snapshot = await getDocs(q);
+            const userEntries = snapshot.docs.map(d => d.data());
+            
+            calendarContainer.innerHTML = `
+                ${generateCalendar(5, 2025, userEntries, userName)}
+                ${generateCalendar(6, 2025, userEntries, userName)}
+                ${generateCalendar(7, 2025, userEntries, userName)}
+                ${generateCalendar(8, 2025, userEntries, userName)}
+            `;
+            
+            document.querySelectorAll('.edit-day-btn').forEach(btn => btn.addEventListener('click', handleDayEdit));
+        }
+
+        async function openMinutesModal(userName) {
+            minutesModalTitle.textContent = `${userName}'s Summary`;
+            minutesModalContent.textContent = '...';
+            minutesModalDetail.textContent = 'Calculating...';
+            minutesModal.classList.remove('hidden');
+            minutesModal.classList.add('flex');
+
+            const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
+            const q = query(entriesRef, where("name", "==", userName));
+            const snapshot = await getDocs(q);
+            const totalMinutes = snapshot.docs.reduce((sum, doc) => sum + (doc.data().minutes || 0), 0);
+
+            const hours = Math.floor(totalMinutes / 60);
+            const minutes = totalMinutes % 60;
+
+            minutesModalContent.textContent = totalMinutes;
+            if (hours > 0) {
+                 minutesModalDetail.textContent = `That's ${hours} hour(s) and ${minutes} minute(s)!`;
+            } else {
+                 minutesModalDetail.textContent = `Keep up the great work!`;
+            }
+        }
+
+        async function handleDayEdit(e) {
+            const target = e.currentTarget;
+            const date = target.dataset.date;
+            const userName = target.dataset.user;
+
+            const entryDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/entries`, `${userName}_${date}`));
+            const existingEntry = entryDoc.data();
+            const currentlyExercised = existingEntry ? existingEntry.exercised : null;
+            
+            // Cycle through states: Yes -> No -> No Entry (delete)
+            let nextState;
+            if (currentlyExercised === true) nextState = false; // from yes to no
+            else if (currentlyExercised === false) nextState = null; // from no to delete
+            else nextState = true; // from nothing to yes
+            
+            const entryRef = doc(db, `artifacts/${appId}/public/data/entries`, `${userName}_${date}`);
+            if (nextState === null) {
+                const batch = writeBatch(db);
+                batch.delete(entryRef);
+                await batch.commit();
+            } else {
+                 await setDoc(entryRef, { name: userName, date: date, exercised: nextState, minutes: 0, notes: "" });
+            }
+            
+            await recalculateAndSaveUserStats(userName);
+            openCalendarModal(userName); // Refresh calendar
+        }
+
+        async function recalculateAndSaveUserStats(userName) {
+            const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
+            const q = query(entriesRef, where("name", "==", userName));
+            const snapshot = await getDocs(q);
+            const userEntries = snapshot.docs.map(d => d.data()).sort((a,b) => a.date.localeCompare(b.date));
+
+            let newPoints = 0;
+            let streak = 0;
+            let lastDate = null;
+            const streakMilestones = [5, 15, 25];
+
+            for (const entry of userEntries) {
+                 if (new Date(entry.date) > today) continue;
+
+                if (entry.exercised) {
+                    newPoints += 10;
+                    const currentDate = new Date(entry.date + 'T12:00:00Z');
+                    if(lastDate) {
+                        const diffDays = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24));
+                        streak = (diffDays === 1) ? streak + 1 : 1;
+                    } else {
+                        streak = 1;
+                    }
+                    if (streakMilestones.includes(streak)) {
+                        newPoints += 25;
+                    }
+                    lastDate = currentDate;
+                } else {
+                    streak = 0;
+                    lastDate = new Date(entry.date + 'T12:00:00Z');
+                }
+            }
+            
+            // Determine current streak up to "today"
+            let currentStreak = 0;
+            let lastStreakDate = null;
+            for (const entry of userEntries.filter(e => new Date(e.date) <= today).reverse()){
+                 if (entry.exercised) {
+                    const currentDate = new Date(entry.date + 'T12:00:00Z');
+                     if(lastStreakDate){
+                         const diffDays = Math.round((lastStreakDate - currentDate) / (1000 * 60 * 60 * 24));
+                         if (diffDays !== 1) break;
+                     }
+                    currentStreak++;
+                    lastStreakDate = currentDate;
+                 } else {
+                     break;
+                 }
+            }
+
+            const userRef = doc(db, `artifacts/${appId}/public/data/users`, userName);
+            await setDoc(userRef, { points: newPoints, currentStreak: currentStreak, name: userName }, { merge: true });
+        }
+
+
+        // --- Initialization ---
+        async function main() {
+            todayDateEl.textContent = `Today is: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}`;
+            renderForm();
+            
+            try {
+                // Initialize Firebase
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                onAuthStateChanged(auth, async (user) => {
+                    if (user) setupListeners();
+                    else {
+                        try {
+                            if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
+                            else await signInAnonymously(auth);
+                        } catch(error) {
+                            console.error("Error signing in:", error);
+                            leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">Could not connect to the database.</td></tr>';
+                        }
+                    }
+                });
+            } catch(e) {
+                console.error("Firebase init error", e);
+                leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">Error initializing the application.</td></tr>';
+            }
+        }
+        
+        async function seedInitialData() {
+            const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
+            const q = query(usersRef, where("name", "in", familyMembers));
+            const snapshot = await getDocs(q);
+            const existingNames = snapshot.docs.map(d => d.data().name);
+            const missingNames = familyMembers.filter(name => !existingNames.includes(name));
+
+            if (missingNames.length > 0) {
+                const batch = writeBatch(db);
+                missingNames.forEach(name => {
+                    batch.set(doc(usersRef, name), { name, points: 0, currentStreak: 0, lastExerciseDate: null });
+                });
+                await batch.commit();
+            }
+        }
+
+        function setupListeners() {
+             seedInitialData().then(() => {
+                const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
+                onSnapshot(usersRef, (snapshot) => {
+                    users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    renderLeaderboard();
+                    renderForm();
+                });
+
+                const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
+                const q = query(entriesRef, where("date", "==", todayString));
+                onSnapshot(q, (snapshot) => {
+                    entries = {};
+                    snapshot.docs.forEach(doc => { entries[doc.data().name] = doc.data(); });
+                    renderLeaderboard();
+                    renderForm();
+                });
+            });
+        }
+        
+        // --- Modal Listeners ---
+        calendarCloseBtn.addEventListener('click', () => calendarModal.classList.add('hidden'));
+        minutesCloseBtn.addEventListener('click', () => minutesModal.classList.add('hidden'));
+        
+        main();
+    </script>
+</body>
+</html>
