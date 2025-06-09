@@ -56,7 +56,9 @@
 
             <!-- Leaderboard -->
             <div class="bg-white rounded-xl shadow-lg p-6">
-                <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Leaderboard</h2>
+                 <div class="flex justify-center items-center mb-6">
+                     <h2 class="text-2xl font-bold text-center text-blue-900">Leaderboard</h2>
+                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead class="bg-slate-50">
@@ -87,112 +89,98 @@
                 <h2 id="calendar-modal-title" class="text-2xl font-bold text-blue-900">Edit Entries</h2>
                 <button id="calendar-close-btn" class="text-slate-500 hover:text-slate-800 text-3xl">&times;</button>
             </div>
-            <div id="calendar-container" class="space-y-6">
-                <!-- Calendars will be inserted here -->
-            </div>
+            <div id="calendar-container" class="space-y-6"></div>
         </div>
     </div>
+    
+    <!-- Day Edit Modal -->
+    <div id="day-edit-modal" class="fixed inset-0 bg-black bg-opacity-60 hidden items-center justify-center p-4 z-[60]">
+        <form id="day-edit-form" class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+             <h2 id="day-edit-title" class="text-2xl font-bold text-blue-900"></h2>
+             <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                <select id="day-edit-status" class="w-full p-2 border border-slate-300 rounded-md">
+                    <option value="yes">⭐ Gold Star</option>
+                    <option value="no">❌ No Star</option>
+                    <option value="delete">-- No Entry --</option>
+                </select>
+             </div>
+             <div id="day-edit-details" class="space-y-4">
+                <div id="day-edit-workouts-container" class="space-y-2"></div>
+                <button type="button" id="day-edit-add-workout" class="w-full text-sm py-2 px-4 bg-slate-100 hover:bg-slate-200 rounded-md">+ Add Workout</button>
+             </div>
+             <div class="flex justify-end space-x-4 pt-4 border-t">
+                <button type="button" id="day-edit-cancel" class="bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded-lg hover:bg-slate-300">Cancel</button>
+                <button type="submit" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800">Save</button>
+             </div>
+        </form>
+    </div>
 
-    <!-- Minutes Summary Modal -->
-    <div id="minutes-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <h2 id="minutes-modal-title" class="text-2xl font-bold text-blue-900 mb-4">Exercise Summary</h2>
-            <p id="minutes-modal-content" class="text-5xl font-bold text-slate-700 mb-2">0</p>
-            <p class="text-slate-500 mb-6">Total Minutes</p>
-            <p id="minutes-modal-detail" class="text-lg text-slate-600 mb-6"></p>
-            <button id="minutes-close-btn" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800">Close</button>
+    <!-- User Stats Modal -->
+    <div id="stats-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <h2 id="stats-modal-title" class="text-2xl font-bold text-blue-900 mb-4 text-center"></h2>
+            <div id="stats-modal-content"></div>
+            <button id="stats-close-btn" class="mt-6 w-full bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800">Close</button>
         </div>
     </div>
 
 
     <script type="module">
-        // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
-        import { getFirestore, collection, doc, onSnapshot, setDoc, getDocs, getDoc, query, where, writeBatch, orderBy } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-auth.js";
+        import { getFirestore, collection, doc, onSnapshot, setDoc, getDocs, getDoc, query, where, writeBatch, deleteDoc } from "https://www.gstatic.com/firebasejs/11.9.0/firebase-firestore.js";
 
         // --- Configuration and State ---
         const familyMembers = ["Von", "Bob", "Mom", "Kate", "Jen"];
-        const today = new Date('2025-06-08T12:00:00Z');
+        const activities = ["Kayaked", "Power Walking", "Ran", "Biked", "Walking Machine", "Rowing Machine", "Elliptical Machine", "Bike Trainer", "Swim", "Resistance Training", "Weight Lifting", "Other"];
+        const activityToEmoji = { "Kayaked": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Biked": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "Other": "🤸‍♀️" };
+        const today = new Date();
         const challengeStartDate = new Date('2025-06-08T00:00:00Z');
         const challengeEndDate = new Date('2025-09-30T23:59:59Z');
         const todayString = today.toISOString().split('T')[0];
         const isChallengeActive = today >= challengeStartDate && today <= challengeEndDate;
 
-        // App state
-        let db;
-        let auth;
-        let users = [];
-        let entries = {};
-        let selectedUser = familyMembers[0];
-        let exercisedToday = null;
+        let db, auth, users = [], entries = {};
+        let selectedUser = "", exercisedToday = null;
 
-        // DOM elements
         const formContainer = document.getElementById('form-container');
         const leaderboardBody = document.getElementById('leaderboard-body');
         const todayDateEl = document.getElementById('today-date');
         const messageContainer = document.getElementById('message-container');
-        const calendarModal = document.getElementById('calendar-modal');
-        const calendarModalTitle = document.getElementById('calendar-modal-title');
-        const calendarContainer = document.getElementById('calendar-container');
-        const calendarCloseBtn = document.getElementById('calendar-close-btn');
-        const minutesModal = document.getElementById('minutes-modal');
-        const minutesModalTitle = document.getElementById('minutes-modal-title');
-        const minutesModalContent = document.getElementById('minutes-modal-content');
-        const minutesModalDetail = document.getElementById('minutes-modal-detail');
-        const minutesCloseBtn = document.getElementById('minutes-close-btn');
+        const calendarModal = document.getElementById('calendar-modal'), calendarModalTitle = document.getElementById('calendar-modal-title'), calendarContainer = document.getElementById('calendar-container'), calendarCloseBtn = document.getElementById('calendar-close-btn');
+        const dayEditModal = document.getElementById('day-edit-modal'), dayEditForm = document.getElementById('day-edit-form'), dayEditTitle = document.getElementById('day-edit-title'), dayEditStatus = document.getElementById('day-edit-status'), dayEditDetails = document.getElementById('day-edit-details'), dayEditAddWorkout = document.getElementById('day-edit-add-workout'), dayEditCancel = document.getElementById('day-edit-cancel');
+        const statsModal = document.getElementById('stats-modal'), statsModalTitle = document.getElementById('stats-modal-title'), statsModalContent = document.getElementById('stats-modal-content'), statsCloseBtn = document.getElementById('stats-close-btn');
 
-        // --- Firebase Configuration ---
-        // This configuration is specific to your Firebase project.
-        const firebaseConfig = {
-            apiKey: "AIzaSyAvk0bvFtWE3SDUaOWntFMgNtjbMtgR4OQ",
-            authDomain: "fun-fit-a465a.firebaseapp.com",
-            projectId: "fun-fit-a465a",
-            storageBucket: "fun-fit-a465a.firebasestorage.app",
-            messagingSenderId: "221581983535",
-            appId: "1:221581983535:web:ba7051794ce3b1f3c32bda"
-        };
-        const appId = firebaseConfig.projectId; // Use projectId for database paths
-        const initialAuthToken = null; // No custom token needed for this public app.
+        const firebaseConfig = { apiKey: "AIzaSyAvk0bvFtWE3SDUaOWntFMgNtjbMtgR4OQ", authDomain: "fun-fit-a465a.firebaseapp.com", projectId: "fun-fit-a465a", storageBucket: "fun-fit-a465a.firebasestorage.app", messagingSenderId: "221581983535", appId: "1:221581983535:web:ba7051794ce3b1f3c32bda" };
+        const appId = firebaseConfig.projectId;
         
-        // --- Helper Functions ---
         function showMessage(type, text) {
             const color = type === 'success' ? 'bg-blue-600' : 'bg-red-500';
             messageContainer.innerHTML = `<div class="fixed bottom-5 right-5 p-4 rounded-lg shadow-xl text-white animate-fade-in-out ${color}">${text}</div>`;
             setTimeout(() => { messageContainer.innerHTML = ''; }, 5000);
         }
         
-        function getStreakStyle(streak) {
-            if (streak >= 30) return 'font-bold text-blue-500';
-            if (streak >= 14) return 'font-bold text-orange-500';
-            if (streak >= 7) return 'font-bold text-slate-800';
-            return 'font-medium text-slate-700';
-        }
-        
-        // --- Rendering ---
         function renderLeaderboard() {
-            const leaderboardData = [...users]
-                .map(user => ({ ...user, todayEntry: entries[user.name] }))
-                .sort((a, b) => b.points - a.points);
-            
+            const leaderboardData = [...users].sort((a, b) => b.points - a.points);
             leaderboardBody.innerHTML = '';
-
             if (leaderboardData.length === 0) {
                  leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500">Waiting for players...</td></tr>';
                  return;
             }
+            
+            const maxScore = leaderboardData.length > 0 ? leaderboardData[0].points : 0;
 
             leaderboardData.forEach((user, index) => {
                 const row = document.createElement('tr');
                 row.className = 'border-b border-slate-100 last:border-none';
-                
-                const dailyStatus = user.todayEntry ? (user.todayEntry.exercised ? '⭐' : '❌') : '…';
+                const dailyStatus = entries[user.name] ? (entries[user.name].exercised ? '⭐' : '❌') : '…';
                 const streakText = user.currentStreak > 0 ? `${user.currentStreak} day${user.currentStreak > 1 ? 's' : ''}` : '-';
                 const streakIcon = user.currentStreak >= 3 ? `<span class="ml-2">🔥</span>` : '';
-                
-                row.innerHTML = `
-                    <td class="p-3 font-bold text-lg text-slate-700">${index + 1}</td>
-                    <td class="p-3 text-lg ${getStreakStyle(user.currentStreak)}">
+                const trophyIcon = user.points > 0 && user.points === maxScore ? `<span class="mr-2">🏆</span>` : '';
+
+                row.innerHTML = `<td class="p-3 font-bold text-lg text-slate-700">${index + 1}</td>
+                    <td class="p-3 text-lg ${user.currentStreak >= 30 ? 'font-bold text-blue-500' : user.currentStreak >= 14 ? 'font-bold text-orange-500' : user.currentStreak >= 7 ? 'font-bold text-slate-800' : 'font-medium text-slate-700'}">
                         <div class="flex items-center">
                             <button data-user="${user.name}" class="name-btn text-left hover:underline focus:outline-none">${user.name}</button>
                             <button data-user="${user.name}" class="edit-btn ml-8 text-slate-400 hover:text-blue-600">✏️</button>
@@ -200,133 +188,94 @@
                     </td>
                     <td class="p-3 text-center text-2xl">${dailyStatus}</td>
                     <td class="p-3 text-center text-lg font-medium text-slate-600">${streakText}${streakIcon}</td>
-                    <td class="p-3 text-right text-xl font-bold text-blue-700">${user.points}</td>
-                `;
+                    <td class="p-3 text-right text-xl font-bold text-blue-700">
+                        <div class="flex items-center justify-end">
+                            ${trophyIcon}
+                            <span>${user.points}</span>
+                        </div>
+                    </td>`;
                 leaderboardBody.appendChild(row);
             });
-            
             document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => openCalendarModal(btn.dataset.user)));
-            document.querySelectorAll('.name-btn').forEach(btn => btn.addEventListener('click', () => openMinutesModal(btn.dataset.user)));
+            document.querySelectorAll('.name-btn').forEach(btn => btn.addEventListener('click', () => openStatsModal(btn.dataset.user)));
         }
         
         function renderForm() {
              if (!isChallengeActive) {
-                formContainer.innerHTML = `<div class="bg-white rounded-xl shadow-lg p-6 text-center mb-8"><h2 class="text-2xl font-bold text-blue-900 mb-4">The Challenge is Over!</h2><p class="text-slate-600">Thanks for participating. Come back next year!</p></div>`;
+                formContainer.innerHTML = `<div class="bg-white rounded-xl shadow-lg p-6 text-center mb-8"><h2 class="text-2xl font-bold text-blue-900 mb-4">The Challenge is Over!</h2><p class="text-slate-600">Thanks for participating.</p></div>`;
                 return;
             }
-
-            const userOptions = familyMembers.map(name => `<option value="${name}" ${name === selectedUser ? 'selected' : ''}>${name}</option>`).join('');
-            const hasSubmitted = !!entries[selectedUser];
-
-            formContainer.innerHTML = `
-                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            let userOptions = `<option value="" disabled ${selectedUser === "" ? "selected" : ""}>---</option>${familyMembers.map(n => `<option value="${n}" ${n === selectedUser ? 'selected' : ''}>${n}</option>`).join('')}`;
+            const hasSubmitted = selectedUser && !!entries[selectedUser];
+            formContainer.innerHTML = `<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
                     <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Log Today's Exercise</h2>
                     <form id="entry-form" class="space-y-6">
-                        <div>
-                            <label for="user-select" class="block text-sm font-medium text-slate-700 mb-1">Who are you?</label>
-                            <select id="user-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">${userOptions}</select>
+                        <div><label for="user-select" class="block text-sm font-medium text-slate-700 mb-1">Who are you?</label><select id="user-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">${userOptions}</select></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">Did you earn a gold star today? <span class="text-red-500">*</span></label><div class="flex items-center space-x-4"><button type="button" id="yes-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'yes' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">Yes</button><button type="button" id="no-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'no' ? 'bg-red-500 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">No</button></div></div>
+                        <div id="optional-fields" class="${exercisedToday === 'yes' ? 'space-y-4 animate-fade-in' : 'hidden'}">
+                            <div id="workouts-container" class="space-y-2"></div>
+                            <button type="button" id="add-workout-btn" class="w-full text-sm py-2 px-4 bg-slate-100 hover:bg-slate-200 rounded-md">+ Add Workout</button>
                         </div>
-                        <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-2">Did you earn a gold star today? <span class="text-red-500">*</span></label>
-                            <div class="flex items-center space-x-4">
-                                <button type="button" id="yes-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'yes' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">Yes</button>
-                                <button type="button" id="no-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'no' ? 'bg-red-500 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">No</button>
-                            </div>
-                        </div>
-                        <div id="optional-fields" class="${exercisedToday === 'yes' ? 'space-y-6 animate-fade-in' : 'hidden'}">
-                             <div>
-                                <label for="minutes" class="block text-sm font-medium text-slate-700">How many minutes? (Optional)</label>
-                                <input type="number" id="minutes" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., 30">
-                            </div>
-                            <div>
-                                <label for="notes" class="block text-sm font-medium text-slate-700">What did you do? (Optional)</label>
-                                <textarea id="notes" rows="3" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Went for a bike ride"></textarea>
-                            </div>
-                        </div>
-                        <div>
-                            <button type="submit" id="submit-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400" ${hasSubmitted || exercisedToday === null ? 'disabled' : ''}>
-                                ${hasSubmitted ? 'Entry Submitted for Today' : 'Save My Entry'}
-                            </button>
-                        </div>
+                        <div><button type="submit" id="submit-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400" ${hasSubmitted || exercisedToday === null || !selectedUser ? 'disabled' : ''}>${hasSubmitted ? 'Entry Submitted' : 'Save My Entry'}</button></div>
                     </form>
                 </div>`;
+            if (exercisedToday === 'yes') addWorkoutRow('workouts-container');
             addFormEventListeners();
+        }
+
+        function addWorkoutRow(containerId, workout = { activity: '', minutes: '' }) {
+            const container = document.getElementById(containerId);
+            const workoutDiv = document.createElement('div');
+            workoutDiv.className = 'workout-item flex items-center space-x-2';
+            let activityOptions = `<option value="">---</option>` + activities.map(a => `<option value="${a}" ${a === workout.activity ? 'selected' : ''}>${a}</option>`).join('');
+            workoutDiv.innerHTML = `<select class="activity-select mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">${activityOptions}</select>
+                <input type="number" min="0" class="minutes-input mt-1 block w-28 border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Mins" value="${workout.minutes}">
+                <button type="button" class="remove-workout-btn text-red-500 hover:text-red-700 font-bold py-2 px-2 rounded-md">&times;</button>`;
+            container.appendChild(workoutDiv);
+            workoutDiv.querySelector('.remove-workout-btn').addEventListener('click', () => workoutDiv.remove());
         }
 
         function generateCalendar(month, year, userEntries, userName) {
             const date = new Date(year, month, 1);
-            const monthName = date.toLocaleString('default', { month: 'long' });
-            let html = `<div class="p-4 border rounded-lg"><h3 class="text-xl font-bold text-slate-700 text-center mb-4">${monthName} ${year}</h3>`;
-            const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-            html += `<div class="calendar-grid mb-2">${daysOfWeek.map(d => `<div class="font-bold text-slate-500 text-center text-sm">${d}</div>`).join('')}</div>`;
-
-            html += '<div class="calendar-grid">';
-            // Add blank days for the first day of the month
-            for (let i = 0; i < date.getDay(); i++) {
-                html += '<div></div>';
-            }
-
+            let html = `<div class="p-4 border rounded-lg"><h3 class="text-xl font-bold text-slate-700 text-center mb-4">${date.toLocaleString('default', { month: 'long' })} ${year}</h3>
+                <div class="calendar-grid mb-2">${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => `<div class="font-bold text-slate-500 text-center text-sm">${d}</div>`).join('')}</div>
+                <div class="calendar-grid">`;
+            for (let i = 0; i < date.getDay(); i++) { html += '<div></div>'; }
             while (date.getMonth() === month) {
                 const dayStr = new Date(date.valueOf()).toISOString().split('T')[0];
                 const entry = userEntries.find(e => e.date === dayStr);
-                let dayClass = 'bg-slate-100 hover:bg-blue-100 cursor-pointer';
-                let content = `<span class="text-slate-600">${date.getDate()}</span>`;
-
-                if(entry) {
-                    if (entry.exercised) {
-                        dayClass = 'bg-amber-200 hover:bg-amber-300 cursor-pointer';
-                        content = '⭐';
-                    } else {
-                        dayClass = 'bg-red-200 hover:bg-red-300 cursor-pointer';
-                        content = '❌';
-                    }
-                }
-                
+                let dayClass = 'bg-slate-100 hover:bg-blue-100', content = `<span class="text-slate-600">${date.getDate()}</span>`;
+                if(entry) { content = entry.exercised ? '⭐' : '❌'; dayClass = entry.exercised ? 'bg-amber-200 hover:bg-amber-300' : 'bg-red-200 hover:bg-red-300'; }
                 const fullDate = new Date(date);
-                if (fullDate < challengeStartDate || fullDate > challengeEndDate || fullDate > today) {
-                    dayClass = 'bg-slate-50 text-slate-300';
-                    content = `<span class="text-slate-400">${date.getDate()}</span>`;
-                    html += `<div class="flex items-center justify-center rounded-lg calendar-day ${dayClass}">${content}</div>`;
-                } else {
-                     html += `<div data-date="${dayStr}" data-user="${userName}" class="edit-day-btn flex items-center justify-center rounded-lg calendar-day ${dayClass}">${content}</div>`;
-                }
-                
+                if (fullDate < challengeStartDate || fullDate > today) html += `<div class="flex items-center justify-center rounded-lg calendar-day bg-slate-50 text-slate-300"><span class="text-slate-400">${date.getDate()}</span></div>`;
+                else html += `<div data-date="${dayStr}" data-user="${userName}" class="edit-day-btn flex items-center justify-center rounded-lg calendar-day cursor-pointer ${dayClass}">${content}</div>`;
                 date.setDate(date.getDate() + 1);
             }
-            html += '</div></div>';
-            return html;
+            return html + '</div></div>';
         }
 
-
-        // --- Event Handling ---
         function addFormEventListeners() {
-            document.getElementById('user-select').addEventListener('change', (e) => {
-                selectedUser = e.target.value;
-                exercisedToday = null;
-                renderForm();
-            });
+            document.getElementById('user-select').addEventListener('change', (e) => { selectedUser = e.target.value; exercisedToday = null; renderForm(); });
             document.getElementById('yes-btn').addEventListener('click', () => { exercisedToday = 'yes'; renderForm(); });
             document.getElementById('no-btn').addEventListener('click', () => { exercisedToday = 'no'; renderForm(); });
+            document.getElementById('add-workout-btn')?.addEventListener('click', () => addWorkoutRow('workouts-container'));
             document.getElementById('entry-form').addEventListener('submit', handleFormSubmit);
         }
 
         async function handleFormSubmit(e) {
             e.preventDefault();
-            if (exercisedToday === null) return;
-            
+            if (exercisedToday === null || !selectedUser) return;
             const exercised = exercisedToday === 'yes';
-            const minutesVal = document.getElementById('minutes')?.value || "";
-            const notesVal = document.getElementById('notes')?.value || "";
-            
-            const entryRef = doc(db, `artifacts/${appId}/public/data/entries`, `${selectedUser}_${todayString}`);
-            await setDoc(entryRef, {
-                name: selectedUser,
-                date: todayString,
-                exercised: exercised,
-                minutes: minutesVal ? parseInt(minutesVal, 10) : 0,
-                notes: notesVal
-            });
-            
+            const workouts = [];
+            if (exercised) {
+                document.querySelectorAll('#workouts-container .workout-item').forEach(item => {
+                    const activity = item.querySelector('.activity-select').value;
+                    const minutes = Math.max(0, parseInt(item.querySelector('.minutes-input').value, 10) || 0);
+                    if (activity && minutes > 0) workouts.push({ activity, minutes });
+                });
+            }
+            const entryData = { name: selectedUser, date: todayString, exercised: exercised && workouts.length > 0, workouts };
+            await setDoc(doc(db, `artifacts/${appId}/public/data/entries`, `${selectedUser}_${todayString}`), entryData);
             await recalculateAndSaveUserStats(selectedUser);
             showMessage('success', `Entry saved for ${selectedUser}.`);
             exercisedToday = null;
@@ -335,198 +284,177 @@
         async function openCalendarModal(userName) {
             calendarModalTitle.textContent = `Edit Entries for ${userName}`;
             calendarContainer.innerHTML = '<div class="text-center p-8">Loading calendar...</div>';
-            calendarModal.classList.remove('hidden');
-            calendarModal.classList.add('flex');
-
-            const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
-            const q = query(entriesRef, where("name", "==", userName));
+            calendarModal.classList.remove('hidden'); calendarModal.classList.add('flex');
+            const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
             const userEntries = snapshot.docs.map(d => d.data());
-            
-            calendarContainer.innerHTML = `
-                ${generateCalendar(5, 2025, userEntries, userName)}
-                ${generateCalendar(6, 2025, userEntries, userName)}
-                ${generateCalendar(7, 2025, userEntries, userName)}
-                ${generateCalendar(8, 2025, userEntries, userName)}
-            `;
-            
-            document.querySelectorAll('.edit-day-btn').forEach(btn => btn.addEventListener('click', handleDayEdit));
+            calendarContainer.innerHTML = [2025].flatMap(year => [5,6,7,8].map(month => generateCalendar(month, year, userEntries, userName))).join('<div class="my-3"></div>');
+            document.querySelectorAll('.edit-day-btn').forEach(btn => btn.addEventListener('click', () => openDayEditModal(btn.dataset.user, btn.dataset.date)));
         }
 
-        async function openMinutesModal(userName) {
-            minutesModalTitle.textContent = `${userName}'s Summary`;
-            minutesModalContent.textContent = '...';
-            minutesModalDetail.textContent = 'Calculating...';
-            minutesModal.classList.remove('hidden');
-            minutesModal.classList.add('flex');
-
-            const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
-            const q = query(entriesRef, where("name", "==", userName));
-            const snapshot = await getDocs(q);
-            const totalMinutes = snapshot.docs.reduce((sum, doc) => sum + (doc.data().minutes || 0), 0);
-
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-
-            minutesModalContent.textContent = totalMinutes;
-            if (hours > 0) {
-                 minutesModalDetail.textContent = `That's ${hours} hour(s) and ${minutes} minute(s)!`;
-            } else {
-                 minutesModalDetail.textContent = `Keep up the great work!`;
-            }
+        async function openDayEditModal(userName, dateStr) {
+            const entryDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/entries`, `${userName}_${dateStr}`));
+            const entry = entryDoc.data() || { workouts: [] };
+            dayEditTitle.textContent = `Edit for ${new Date(dateStr + "T12:00:00Z").toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`;
+            dayEditStatus.value = entry.exercised === false ? 'no' : (entry.workouts && entry.workouts.length > 0 ? 'yes' : 'delete');
+            const container = document.getElementById('day-edit-workouts-container');
+            container.innerHTML = '';
+            const workoutsToDisplay = entry.workouts && entry.workouts.length > 0 ? entry.workouts : [{ activity: '', minutes: '' }];
+            workoutsToDisplay.forEach(w => addWorkoutRow('day-edit-workouts-container', w));
+            dayEditDetails.style.display = dayEditStatus.value === 'yes' ? 'block' : 'none';
+            dayEditForm.dataset.user = userName; dayEditForm.dataset.date = dateStr;
+            dayEditModal.classList.remove('hidden'); dayEditModal.classList.add('flex');
         }
+        
+        dayEditStatus.addEventListener('change', () => { dayEditDetails.style.display = dayEditStatus.value === 'yes' ? 'block' : 'none'; });
 
-        async function handleDayEdit(e) {
-            const target = e.currentTarget;
-            const date = target.dataset.date;
-            const userName = target.dataset.user;
-
-            const entryDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/entries`, `${userName}_${date}`));
-            const existingEntry = entryDoc.data();
-            const currentlyExercised = existingEntry ? existingEntry.exercised : null;
-            
-            // Cycle through states: Yes -> No -> No Entry (delete)
-            let nextState;
-            if (currentlyExercised === true) nextState = false; // from yes to no
-            else if (currentlyExercised === false) nextState = null; // from no to delete
-            else nextState = true; // from nothing to yes
-            
-            const entryRef = doc(db, `artifacts/${appId}/public/data/entries`, `${userName}_${date}`);
-            if (nextState === null) {
-                const batch = writeBatch(db);
-                batch.delete(entryRef);
-                await batch.commit();
-            } else {
-                 await setDoc(entryRef, { name: userName, date: date, exercised: nextState, minutes: 0, notes: "" });
+        dayEditForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const { user: userName, date: dateStr } = e.target.dataset;
+            const status = dayEditStatus.value;
+            const entryRef = doc(db, `artifacts/${appId}/public/data/entries`, `${userName}_${dateStr}`);
+            if (status === 'delete') await deleteDoc(entryRef);
+            else {
+                const exercised = status === 'yes';
+                const workouts = [];
+                if (exercised) {
+                    document.querySelectorAll('#day-edit-workouts-container .workout-item').forEach(item => {
+                        const activity = item.querySelector('.activity-select').value;
+                        const minutes = Math.max(0, parseInt(item.querySelector('.minutes-input').value, 10) || 0);
+                        if (activity && minutes > 0) workouts.push({ activity, minutes });
+                    });
+                }
+                await setDoc(entryRef, { name: userName, date: dateStr, exercised: exercised && workouts.length > 0, workouts });
             }
-            
             await recalculateAndSaveUserStats(userName);
-            openCalendarModal(userName); // Refresh calendar
+            dayEditModal.classList.add('hidden'); calendarModal.classList.add('hidden');
+            showMessage('success', 'Entry updated!');
+        });
+
+        async function openStatsModal(userName) {
+            statsModalTitle.textContent = `${userName}'s Summary`;
+            statsModalContent.innerHTML = '<div class="text-center p-8">Calculating...</div>';
+            statsModal.classList.remove('hidden'); statsModal.classList.add('flex');
+            const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
+            const snapshot = await getDocs(q);
+            const userEntries = snapshot.docs.map(doc => doc.data());
+            renderStatsContent(userEntries);
+        }
+        
+        function renderStatsContent(userEntries) {
+            const totalMinutes = userEntries.reduce((sum, entry) => sum + (entry.workouts?.reduce((s, w) => s + (w.minutes || 0), 0) || 0), 0);
+            const activityData = activities.reduce((acc, activity) => {
+                const workouts = userEntries.flatMap(e => e.workouts || []).filter(w => w.activity === activity);
+                if (workouts.length > 0) {
+                    acc[activity] = {
+                        count: workouts.length,
+                        totalMinutes: workouts.reduce((sum, w) => sum + w.minutes, 0)
+                    };
+                }
+                return acc;
+            }, {});
+
+            let summaryHtml = `<div class="text-center mb-6"><p class="text-5xl font-bold text-slate-700 mb-2">${totalMinutes}</p><p class="text-slate-500">Total Minutes</p></div>`;
+            if (totalMinutes > 0) {
+                 const hours = Math.floor(totalMinutes / 60);
+                 const minutes = totalMinutes % 60;
+                 summaryHtml += `<p class="text-lg text-slate-600 mb-6 text-center">That's ${hours} hour(s) and ${minutes} minute(s)!</p>`;
+            }
+
+            const sortedActivities = Object.entries(activityData).sort(([,a], [,b]) => b.totalMinutes - a.totalMinutes);
+            
+            let tableHtml = '<div class="space-y-4">';
+            if (sortedActivities.length > 0) {
+                sortedActivities.forEach(([activity, data]) => {
+                    const barWidth = totalMinutes > 0 ? (data.totalMinutes / totalMinutes) * 100 : 0;
+                    tableHtml += `
+                        <div>
+                            <div class="flex items-center text-sm mb-1">
+                                <span class="font-bold text-slate-700 flex items-center">
+                                    <span class="text-lg mr-2">${activityToEmoji[activity] || '❓'}</span>
+                                    <span>${activity}</span>
+                                    <span class="text-slate-500 text-xs font-normal ml-4">x ${data.count}</span>
+                                </span>
+                            </div>
+                            <div class="flex items-center space-x-2 mt-1">
+                                <div class="w-full bg-slate-200 rounded-full h-5">
+                                    <div class="bg-blue-600 h-5 rounded-full" style="width: ${barWidth}%"></div>
+                                </div>
+                                <span class="text-sm text-slate-600 w-12 text-right">${data.totalMinutes} min</span>
+                            </div>
+                        </div>
+                    `;
+                });
+            } else {
+                 tableHtml += '<p class="text-center text-slate-500 py-8">No activities logged yet.</p>';
+            }
+            tableHtml += '</div>';
+            
+            statsModalContent.innerHTML = summaryHtml + tableHtml;
         }
 
         async function recalculateAndSaveUserStats(userName) {
-            const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
-            const q = query(entriesRef, where("name", "==", userName));
+            const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
             const userEntries = snapshot.docs.map(d => d.data()).sort((a,b) => a.date.localeCompare(b.date));
-
-            let newPoints = 0;
-            let streak = 0;
-            let lastDate = null;
+            let newPoints = 0, streak = 0, lastDate = null;
             const streakMilestones = [5, 15, 25];
-
             for (const entry of userEntries) {
-                 if (new Date(entry.date) > today) continue;
-
+                if (new Date(entry.date + "T00:00:00Z") > today) continue;
                 if (entry.exercised) {
                     newPoints += 10;
                     const currentDate = new Date(entry.date + 'T12:00:00Z');
-                    if(lastDate) {
-                        const diffDays = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24));
-                        streak = (diffDays === 1) ? streak + 1 : 1;
-                    } else {
-                        streak = 1;
-                    }
-                    if (streakMilestones.includes(streak)) {
-                        newPoints += 25;
-                    }
+                    if (lastDate) streak = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24)) === 1 ? streak + 1 : 1;
+                    else streak = 1;
+                    if (streakMilestones.includes(streak)) newPoints += 25;
                     lastDate = currentDate;
-                } else {
-                    streak = 0;
-                    lastDate = new Date(entry.date + 'T12:00:00Z');
-                }
+                } else { streak = 0; }
             }
-            
-            // Determine current streak up to "today"
-            let currentStreak = 0;
-            let lastStreakDate = null;
-            for (const entry of userEntries.filter(e => new Date(e.date) <= today).reverse()){
+            let currentStreak = 0, lastStreakDate = null;
+            const entriesUpToToday = userEntries.filter(e => new Date(e.date + "T00:00:00Z") <= today);
+            for (let i = entriesUpToToday.length - 1; i >= 0; i--) {
+                const entry = entriesUpToToday[i];
                  if (entry.exercised) {
                     const currentDate = new Date(entry.date + 'T12:00:00Z');
-                     if(lastStreakDate){
-                         const diffDays = Math.round((lastStreakDate - currentDate) / (1000 * 60 * 60 * 24));
-                         if (diffDays !== 1) break;
-                     }
-                    currentStreak++;
-                    lastStreakDate = currentDate;
-                 } else {
-                     break;
-                 }
+                    if (lastStreakDate && Math.round((lastStreakDate - currentDate) / (1000 * 60 * 60 * 24)) !== 1) break;
+                    currentStreak++; lastStreakDate = currentDate;
+                 } else { break; }
             }
-
-            const userRef = doc(db, `artifacts/${appId}/public/data/users`, userName);
-            await setDoc(userRef, { points: newPoints, currentStreak: currentStreak, name: userName }, { merge: true });
+            await setDoc(doc(db, `artifacts/${appId}/public/data/users`, userName), { points: newPoints, currentStreak: currentStreak, name: userName }, { merge: true });
         }
-
-
-        // --- Initialization ---
+        
         async function main() {
-            todayDateEl.textContent = `Today is: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' })}`;
+            todayDateEl.textContent = `Today is: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
             renderForm();
-            
             try {
-                // Initialize Firebase
-                const app = initializeApp(firebaseConfig);
-                db = getFirestore(app);
-                auth = getAuth(app);
-
-                onAuthStateChanged(auth, async (user) => {
-                    if (user) setupListeners();
-                    else {
-                        try {
-                            if (initialAuthToken) await signInWithCustomToken(auth, initialAuthToken);
-                            else await signInAnonymously(auth);
-                        } catch(error) {
-                            console.error("Error signing in:", error);
-                            leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">Could not connect to the database.</td></tr>';
-                        }
-                    }
-                });
-            } catch(e) {
-                console.error("Firebase init error", e);
-                leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-red-500">Error initializing the application.</td></tr>';
-            }
+                const app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app);
+                onAuthStateChanged(auth, user => { if (user) setupListeners(); else signInAnonymously(auth).catch(e => console.error("Anon sign in error", e)); });
+            } catch(e) { console.error("Firebase init error", e); }
         }
         
         async function seedInitialData() {
             const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
             const q = query(usersRef, where("name", "in", familyMembers));
             const snapshot = await getDocs(q);
-            const existingNames = snapshot.docs.map(d => d.data().name);
-            const missingNames = familyMembers.filter(name => !existingNames.includes(name));
-
+            const missingNames = familyMembers.filter(name => !snapshot.docs.some(d => d.data().name === name));
             if (missingNames.length > 0) {
                 const batch = writeBatch(db);
-                missingNames.forEach(name => {
-                    batch.set(doc(usersRef, name), { name, points: 0, currentStreak: 0, lastExerciseDate: null });
-                });
+                missingNames.forEach(name => { batch.set(doc(usersRef, name), { name, points: 0, currentStreak: 0 }); });
                 await batch.commit();
             }
         }
 
         function setupListeners() {
              seedInitialData().then(() => {
-                const usersRef = collection(db, `artifacts/${appId}/public/data/users`);
-                onSnapshot(usersRef, (snapshot) => {
-                    users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    renderLeaderboard();
-                    renderForm();
-                });
-
-                const entriesRef = collection(db, `artifacts/${appId}/public/data/entries`);
-                const q = query(entriesRef, where("date", "==", todayString));
-                onSnapshot(q, (snapshot) => {
-                    entries = {};
-                    snapshot.docs.forEach(doc => { entries[doc.data().name] = doc.data(); });
-                    renderLeaderboard();
-                    renderForm();
-                });
+                onSnapshot(collection(db, `artifacts/${appId}/public/data/users`), snap => { users = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderLeaderboard(); renderForm(); });
+                onSnapshot(query(collection(db, `artifacts/${appId}/public/data/entries`), where("date", "==", todayString)), snap => { entries = {}; snap.docs.forEach(d => { entries[d.data().name] = d.data(); }); renderLeaderboard(); renderForm(); });
             });
         }
         
-        // --- Modal Listeners ---
         calendarCloseBtn.addEventListener('click', () => calendarModal.classList.add('hidden'));
-        minutesCloseBtn.addEventListener('click', () => minutesModal.classList.add('hidden'));
+        statsCloseBtn.addEventListener('click', () => statsModal.classList.add('hidden'));
+        dayEditCancel.addEventListener('click', () => dayEditModal.classList.add('hidden'));
+        dayEditAddWorkout.addEventListener('click', () => addWorkoutRow('day-edit-workouts-container'));
         
         main();
     </script>
