@@ -59,21 +59,8 @@
                  <div class="flex justify-center items-center mb-6">
                      <h2 class="text-2xl font-bold text-center text-blue-900">Leaderboard</h2>
                  </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left">
-                        <thead class="bg-slate-50">
-                            <tr class="border-b-2 border-slate-200">
-                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider">Rank</th>
-                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider">Name</th>
-                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider text-center">Daily Status</th>
-                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider text-center">Streak</th>
-                                <th class="p-3 text-sm font-semibold text-slate-500 tracking-wider text-right">Points</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-body">
-                             <tr><td colspan="5" class="text-center p-8 text-slate-500">Loading Tracker...</td></tr>
-                        </tbody>
-                    </table>
+                <div id="leaderboard-container" class="space-y-3">
+                     <div class="text-center p-8 text-slate-500">Loading Tracker...</div>
                 </div>
             </div>
             
@@ -106,6 +93,7 @@
                 </select>
              </div>
              <div id="day-edit-details" class="space-y-4">
+                 <label class="block text-sm font-medium text-slate-700 -mb-2">Describe your workout type and time spent exercising.</label>
                 <div id="day-edit-workouts-container" class="space-y-2"></div>
                 <button type="button" id="day-edit-add-workout" class="w-full text-sm py-2 px-4 bg-slate-100 hover:bg-slate-200 rounded-md">+ Add Workout</button>
              </div>
@@ -133,8 +121,8 @@
 
         // --- Configuration and State ---
         const familyMembers = ["Von", "Bob", "Mom", "Kate", "Jen"];
-        const activities = ["Kayaked", "Power Walking", "Ran", "Biked", "Walking Machine", "Rowing Machine", "Elliptical Machine", "Bike Trainer", "Swim", "Resistance Training", "Weight Lifting", "Other"];
-        const activityToEmoji = { "Kayaked": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Biked": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "Other": "🤸‍♀️" };
+        const activities = ["Kayak", "Power Walking", "Ran", "Bike", "Walking Machine", "Rowing Machine", "Elliptical Machine", "Bike Trainer", "Swim", "Resistance Training", "Weight Lifting", "VR Exercise", "Yoga", "Other"];
+        const activityToEmoji = { "Kayak": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Bike": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "VR Exercise": "�", "Yoga": "🧘‍♀️", "Other": "🤸‍♀️" };
         const today = new Date();
         const challengeStartDate = new Date('2025-06-08T00:00:00Z');
         const challengeEndDate = new Date('2025-09-30T23:59:59Z');
@@ -145,7 +133,7 @@
         let selectedUser = "", exercisedToday = null;
 
         const formContainer = document.getElementById('form-container');
-        const leaderboardBody = document.getElementById('leaderboard-body');
+        const leaderboardContainer = document.getElementById('leaderboard-container');
         const todayDateEl = document.getElementById('today-date');
         const messageContainer = document.getElementById('message-container');
         const calendarModal = document.getElementById('calendar-modal'), calendarModalTitle = document.getElementById('calendar-modal-title'), calendarContainer = document.getElementById('calendar-container'), calendarCloseBtn = document.getElementById('calendar-close-btn');
@@ -162,39 +150,73 @@
         }
         
         function renderLeaderboard() {
-            const leaderboardData = [...users].sort((a, b) => b.points - a.points);
-            leaderboardBody.innerHTML = '';
+            const leaderboardData = [...users].sort((a, b) => {
+                if (a.points !== b.points) return b.points - a.points;
+                return (b.totalMinutes || 0) - (a.totalMinutes || 0);
+            });
+            leaderboardContainer.innerHTML = '';
             if (leaderboardData.length === 0) {
-                 leaderboardBody.innerHTML = '<tr><td colspan="5" class="text-center p-8 text-slate-500">Waiting for players...</td></tr>';
+                 leaderboardContainer.innerHTML = '<div class="text-center p-8 text-slate-500">Waiting for players...</div>';
                  return;
             }
             
+            const dailyMinutes = Object.values(entries).map(e => ({ name: e.name, minutes: e.workouts?.reduce((s,w) => s + w.minutes, 0) || 0 }));
+            const sortedDaily = dailyMinutes.sort((a,b) => b.minutes - a.minutes);
+            const firstPlaceDaily = sortedDaily[0]?.minutes > 0 ? sortedDaily[0].minutes : null;
+            const secondPlaceDailyUser = sortedDaily.find(u => u.minutes < firstPlaceDaily);
+            const secondPlaceDaily = secondPlaceDailyUser?.minutes > 0 ? secondPlaceDailyUser.minutes : null;
+            
             const maxScore = leaderboardData.length > 0 ? leaderboardData[0].points : 0;
 
-            leaderboardData.forEach((user, index) => {
-                const row = document.createElement('tr');
-                row.className = 'border-b border-slate-100 last:border-none';
-                const dailyStatus = entries[user.name] ? (entries[user.name].exercised ? '⭐' : '❌') : '…';
-                const streakText = user.currentStreak > 0 ? `${user.currentStreak} day${user.currentStreak > 1 ? 's' : ''}` : '-';
-                const streakIcon = user.currentStreak >= 3 ? `<span class="ml-2">🔥</span>` : '';
-                const trophyIcon = user.points > 0 && user.points === maxScore ? `<span class="mr-2">🏆</span>` : '';
+            leaderboardData.forEach((user) => {
+                const card = document.createElement('div');
+                card.className = 'bg-slate-50 rounded-lg p-4 flex justify-between items-center transition-transform duration-200 hover:scale-105';
+                
+                const dailyEntry = entries[user.name];
+                const dailyStatus = dailyEntry ? (dailyEntry.exercised ? '⭐' : '❌') : '…';
+                
+                let streakDisplay = '-';
+                if(user.currentStreak > 0) {
+                    let streakIcon = '';
+                    if (user.currentStreak >= 30) streakIcon = '🔥🔥🔥🔥🔥';
+                    else if (user.currentStreak >= 20) streakIcon = '🔥🔥🔥🔥';
+                    else if (user.currentStreak >= 10) streakIcon = '🔥🔥🔥';
+                    else if (user.currentStreak >= 5) streakIcon = '🔥🔥';
+                    else if (user.currentStreak >= 3) streakIcon = '🔥';
+                    streakDisplay = `${user.currentStreak}d ${streakIcon}`;
+                }
 
-                row.innerHTML = `<td class="p-3 font-bold text-lg text-slate-700">${index + 1}</td>
-                    <td class="p-3 text-lg ${user.currentStreak >= 30 ? 'font-bold text-blue-500' : user.currentStreak >= 14 ? 'font-bold text-orange-500' : user.currentStreak >= 7 ? 'font-bold text-slate-800' : 'font-medium text-slate-700'}">
-                        <div class="flex items-center">
-                            <button data-user="${user.name}" class="name-btn text-left hover:underline focus:outline-none">${user.name}</button>
-                            <button data-user="${user.name}" class="edit-btn ml-8 text-slate-400 hover:text-blue-600">✏️</button>
+                const trophyIcon = user.points > 0 && user.points === maxScore ? `<span class="text-xl">🏆</span>` : '';
+                
+                const userDailyMinutes = dailyEntry?.workouts?.reduce((s,w) => s + w.minutes, 0) || 0;
+                let minuteMedal = '';
+                if(userDailyMinutes === firstPlaceDaily) minuteMedal = '🥇';
+                else if (userDailyMinutes === secondPlaceDaily) minuteMedal = '🥈';
+
+                card.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="text-3xl text-center w-10">${dailyStatus}</div>
+                        <div class="ml-4">
+                            <div class="flex items-center">
+                                <button data-user="${user.name}" class="name-btn text-left text-lg font-bold text-slate-800 hover:underline focus:outline-none">${user.name}</button>
+                                <span class="text-lg ml-2">${minuteMedal}</span>
+                            </div>
+                            <button data-user="${user.name}" class="edit-btn text-xs text-slate-500 hover:text-blue-600">edit</button>
                         </div>
-                    </td>
-                    <td class="p-3 text-center text-2xl">${dailyStatus}</td>
-                    <td class="p-3 text-center text-lg font-medium text-slate-600">${streakText}${streakIcon}</td>
-                    <td class="p-3 text-right text-xl font-bold text-blue-700">
-                        <div class="flex items-center justify-end">
-                            ${trophyIcon}
-                            <span>${user.points}</span>
+                    </div>
+                    <div class="flex items-center space-x-4 text-right">
+                        <div class="text-slate-600">
+                            <div>${streakDisplay}</div>
                         </div>
-                    </td>`;
-                leaderboardBody.appendChild(row);
+                        <div class="font-bold text-blue-700 text-2xl w-16">
+                           <div class="flex items-center justify-end">
+                                ${trophyIcon}
+                                <span>${user.points}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                leaderboardContainer.appendChild(card);
             });
             document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', () => openCalendarModal(btn.dataset.user)));
             document.querySelectorAll('.name-btn').forEach(btn => btn.addEventListener('click', () => openStatsModal(btn.dataset.user)));
@@ -213,6 +235,7 @@
                         <div><label for="user-select" class="block text-sm font-medium text-slate-700 mb-1">Who are you?</label><select id="user-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">${userOptions}</select></div>
                         <div><label class="block text-sm font-medium text-slate-700 mb-2">Did you earn a gold star today? <span class="text-red-500">*</span></label><div class="flex items-center space-x-4"><button type="button" id="yes-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'yes' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">Yes</button><button type="button" id="no-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'no' ? 'bg-red-500 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">No</button></div></div>
                         <div id="optional-fields" class="${exercisedToday === 'yes' ? 'space-y-4 animate-fade-in' : 'hidden'}">
+                            <label class="block text-sm font-medium text-slate-700 -mb-2">Describe your workout type and time spent exercising.</label>
                             <div id="workouts-container" class="space-y-2"></div>
                             <button type="button" id="add-workout-btn" class="w-full text-sm py-2 px-4 bg-slate-100 hover:bg-slate-200 rounded-md">+ Add Workout</button>
                         </div>
@@ -373,7 +396,7 @@
                                 <span class="font-bold text-slate-700 flex items-center">
                                     <span class="text-lg mr-2">${activityToEmoji[activity] || '❓'}</span>
                                     <span>${activity}</span>
-                                    <span class="text-slate-500 text-xs font-normal ml-4">x ${data.count}</span>
+                                    <span class="text-slate-500 text-xs ml-4">x ${data.count}</span>
                                 </span>
                             </div>
                             <div class="flex items-center space-x-2 mt-1">
@@ -397,10 +420,15 @@
             const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
             const userEntries = snapshot.docs.map(d => d.data()).sort((a,b) => a.date.localeCompare(b.date));
-            let newPoints = 0, streak = 0, lastDate = null;
+            
+            let newPoints = 0, streak = 0, lastDate = null, totalMinutes = 0;
             const streakMilestones = [5, 15, 25];
+
             for (const entry of userEntries) {
                 if (new Date(entry.date + "T00:00:00Z") > today) continue;
+
+                totalMinutes += entry.workouts?.reduce((s, w) => s + (w.minutes || 0), 0) || 0;
+
                 if (entry.exercised) {
                     newPoints += 10;
                     const currentDate = new Date(entry.date + 'T12:00:00Z');
@@ -420,7 +448,7 @@
                     currentStreak++; lastStreakDate = currentDate;
                  } else { break; }
             }
-            await setDoc(doc(db, `artifacts/${appId}/public/data/users`, userName), { points: newPoints, currentStreak: currentStreak, name: userName }, { merge: true });
+            await setDoc(doc(db, `artifacts/${appId}/public/data/users`, userName), { points: newPoints, currentStreak: currentStreak, name: userName, totalMinutes: totalMinutes }, { merge: true });
         }
         
         async function main() {
@@ -439,15 +467,18 @@
             const missingNames = familyMembers.filter(name => !snapshot.docs.some(d => d.data().name === name));
             if (missingNames.length > 0) {
                 const batch = writeBatch(db);
-                missingNames.forEach(name => { batch.set(doc(usersRef, name), { name, points: 0, currentStreak: 0 }); });
+                missingNames.forEach(name => { batch.set(doc(usersRef, name), { name, points: 0, currentStreak: 0, totalMinutes: 0 }); });
                 await batch.commit();
             }
         }
 
         function setupListeners() {
              seedInitialData().then(() => {
-                onSnapshot(collection(db, `artifacts/${appId}/public/data/users`), snap => { users = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderLeaderboard(); renderForm(); });
-                onSnapshot(query(collection(db, `artifacts/${appId}/public/data/entries`), where("date", "==", todayString)), snap => { entries = {}; snap.docs.forEach(d => { entries[d.data().name] = d.data(); }); renderLeaderboard(); renderForm(); });
+                // One-time calculation for all users on startup to ensure data consistency
+                Promise.all(familyMembers.map(name => recalculateAndSaveUserStats(name))).then(() => {
+                     onSnapshot(collection(db, `artifacts/${appId}/public/data/users`), snap => { users = snap.docs.map(d => ({ id: d.id, ...d.data() })); renderLeaderboard(); renderForm(); });
+                     onSnapshot(query(collection(db, `artifacts/${appId}/public/data/entries`), where("date", "==", todayString)), snap => { entries = {}; snap.docs.forEach(d => { entries[d.data().name] = d.data(); }); renderLeaderboard(); renderForm(); });
+                });
             });
         }
         
