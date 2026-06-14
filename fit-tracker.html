@@ -455,7 +455,7 @@
             const exercised = exercisedToday === 'yes';
             const workouts = exercised ? collectWorkouts('#workouts-container') : [];
             const message = document.getElementById('daily-message')?.value || '';
-            const entryData = { name: selectedUser, date: todayString, exercised: exercised && workouts.length > 0, ateWell: ateToday === 'yes', drankWater: waterToday === 'yes', workouts, message };
+            const entryData = { name: selectedUser, date: todayString, exercised: exercised, ateWell: ateToday === 'yes', drankWater: waterToday === 'yes', workouts, message };
             await setDoc(doc(db, `artifacts/${appId}/public/data/entries`, `${selectedUser}_${todayString}`), entryData);
             await recalculateAndSaveUserStats(selectedUser);
             showMessage('success', `Entry saved for ${selectedUser}.`);
@@ -499,7 +499,7 @@
             const entry = entryDoc.data() || { workouts: [] };
             const localDate = new Date(dateStr + "T00:00:00");
             dayEditTitle.textContent = `Edit for ${localDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}`;
-            dayEditStatus.value = entry.exercised === false ? 'no' : (entry.workouts && entry.workouts.length > 0 ? 'yes' : 'delete');
+            dayEditStatus.value = entry.exercised === true ? 'yes' : (entry.exercised === false ? 'no' : 'delete');
             dayEditMessage.value = entry.message || '';
             dayEditAte.value = entry.ateWell ? 'yes' : 'no';
             dayEditWater.value = entry.drankWater ? 'yes' : 'no';
@@ -525,7 +525,7 @@
                 const exercised = status === 'yes';
                 const message = dayEditMessage.value || '';
                 const workouts = exercised ? collectWorkouts('#day-edit-workouts-container') : [];
-                await setDoc(entryRef, { name: userName, date: dateStr, exercised: exercised && workouts.length > 0, ateWell: dayEditAte.value === 'yes', drankWater: dayEditWater.value === 'yes', workouts, message });
+                await setDoc(entryRef, { name: userName, date: dateStr, exercised: exercised, ateWell: dayEditAte.value === 'yes', drankWater: dayEditWater.value === 'yes', workouts, message });
             }
             await recalculateAndSaveUserStats(userName);
             dayEditModal.classList.add('hidden'); calendarModal.classList.add('hidden');
