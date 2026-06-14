@@ -695,6 +695,10 @@
         statsCloseBtn.addEventListener('click', () => statsModal.classList.add('hidden'));
         dayEditCancel.addEventListener('click', () => dayEditModal.classList.add('hidden'));
         messageCloseBtn.addEventListener('click', () => messageModal.classList.add('hidden'));
+        // Click the dark backdrop (outside the popup) to close it.
+        [rulesModal, calendarModal, dayEditModal, statsModal, messageModal].forEach(modal => {
+            modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+        });
         dayEditAddWorkout.addEventListener('click', () => addWorkoutRow('day-edit-workouts-container'));
         
         main();
