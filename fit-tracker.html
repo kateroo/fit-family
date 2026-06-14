@@ -234,14 +234,16 @@
         // is stepped through by calendar date, cycling through all of them over about a month.
         // To add more: process a .webp into images/ and add it to this list.
         const mascotImages = [
-            "images/mascot-02.webp", "images/mascot-28.webp", "images/mascot-23.webp", "images/mascot-04.webp",
-            "images/mascot-06.webp", "images/mascot-15.webp", "images/mascot-07.webp", "images/mascot-strawberry-drink.webp",
-            "images/mascot-strawberry-heart.webp", "images/mascot-10.webp", "images/mascot-20.webp", "images/mascot-14.webp",
-            "images/mascot-26.webp", "images/mascot-19.webp", "images/mascot-18.webp", "images/mascot-09.webp",
-            "images/mascot-01.webp", "images/mascot-21.webp", "images/mascot-22.webp", "images/mascot-17.webp",
-            "images/mascot-03.webp", "images/mascot-16.webp", "images/mascot-24.webp", "images/mascot-05.webp",
-            "images/mascot-11.webp", "images/mascot-08.webp", "images/mascot-27.webp", "images/mascot-12.webp",
-            "images/mascot-25.webp", "images/mascot-13.webp"
+            "images/mascot-06.webp", "images/mascot-16.webp", "images/mascot-07.webp", "images/mascot-22.webp",
+            "images/mascot-strawberry-drink.webp", "images/mascot-21.webp", "images/mascot-32.webp", "images/mascot-03.webp",
+            "images/mascot-14.webp", "images/mascot-10.webp", "images/mascot-20.webp", "images/mascot-04.webp",
+            "images/mascot-33.webp", "images/mascot-13.webp", "images/mascot-15.webp", "images/mascot-02.webp",
+            "images/mascot-25.webp", "images/mascot-36.webp", "images/mascot-strawberry-heart.webp", "images/mascot-35.webp",
+            "images/mascot-31.webp", "images/mascot-29.webp", "images/mascot-19.webp", "images/mascot-23.webp",
+            "images/mascot-27.webp", "images/mascot-11.webp", "images/mascot-09.webp", "images/mascot-01.webp",
+            "images/mascot-30.webp", "images/mascot-05.webp", "images/mascot-17.webp", "images/mascot-08.webp",
+            "images/mascot-34.webp", "images/mascot-12.webp", "images/mascot-24.webp", "images/mascot-18.webp",
+            "images/mascot-26.webp", "images/mascot-28.webp"
         ];
         // Special mascot for specific calendar days (keyed by MM-DD). Add more birthdays here anytime.
         const birthdayMascots = { "06-18": "images/mascot-birthday.webp" }; // Jen's birthday 🎂
@@ -421,7 +423,7 @@
                 btn.disabled = (selectedUser && !!entries[selectedUser]) || exercisedToday === null || !selectedUser;
             };
             // Changing user resets the day; full re-render is fine here.
-            document.getElementById('user-select').addEventListener('change', (e) => { selectedUser = e.target.value; exercisedToday = null; ateToday = null; waterToday = null; renderForm(); });
+            document.getElementById('user-select').addEventListener('change', (e) => { selectedUser = e.target.value; exercisedToday = null; ateToday = null; waterToday = null; try { localStorage.setItem('fitFamilyUser', selectedUser); } catch (err) {} renderForm(); });
             // The yes/no toggles update in place (no full re-render) so typed workouts/messages aren't lost.
             const yesBtn = document.getElementById('yes-btn'), noBtn = document.getElementById('no-btn'), optional = document.getElementById('optional-fields');
             yesBtn.addEventListener('click', () => {
@@ -646,6 +648,11 @@
             todayDateEl.textContent = `Today is: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
             const seasonLastDay = new Date(seasonEnd.getFullYear(), seasonEnd.getMonth(), seasonEnd.getDate() - 1);
             document.getElementById('season-label').textContent = `Current season: ${seasonStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${seasonLastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            // Remember who you are on this device so you don't have to re-pick each day.
+            try {
+                const savedUser = localStorage.getItem('fitFamilyUser');
+                if (savedUser && familyMembers.includes(savedUser)) selectedUser = savedUser;
+            } catch (err) {}
             const mascot = document.getElementById('mascot-img');
             if (mascot && mascotImages.length) {
                 // Same mascot for everyone each day: index by day-number so it advances daily and cycles.
