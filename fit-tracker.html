@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summer Streak Challenge</title>
+    <title>Fit Family Streak Challenge</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,8 +46,9 @@
         <div class="max-w-4xl mx-auto">
             <!-- Header -->
             <header class="text-center mb-8">
-                <h1 class="text-4xl sm:text-5xl font-bold text-blue-900">Summer Streak Challenge</h1>
-                <p class="text-lg text-blue-800/90 mt-2">June 8, 2026 - September 30, 2026</p>
+                <img id="mascot-img" alt="" class="mx-auto h-24 sm:h-28 mb-2 select-none" draggable="false">
+                <h1 class="text-4xl sm:text-5xl font-bold text-blue-900">Fit Family Streak Challenge</h1>
+                <p id="season-label" class="text-lg text-blue-800/90 mt-2"></p>
                 <p id="today-date" class="text-md text-slate-500 mt-1"></p>
                 <button id="rules-btn" class="mt-2 text-sm text-blue-600 hover:underline">How to Play</button>
             </header>
@@ -78,28 +79,24 @@
                 <button id="rules-close-btn" class="text-slate-500 hover:text-slate-800 text-3xl">&times;</button>
             </div>
             <div class="text-slate-700 space-y-4">
-                <h3 class="text-xl font-bold text-blue-800">Welcome to the Summer Streak Challenge!</h3>
-                <p>This is our family's fun way to encourage each other to move a little bit every day this summer. The most important rule is that <strong>you win just by playing!</strong> The goal isn't to be the best, but to support each other and build healthy habits together.</p>
+                <h3 class="text-xl font-bold text-blue-800">Welcome to the Fit Family Streak Challenge!</h3>
+                <p>This is our family's fun way to encourage each other to build healthy habits together. The most important rule is that <strong>you win just by playing!</strong> The goal isn't to be the best, but to support each other.</p>
                 <hr class="my-4">
-                <h4 class="text-lg font-bold text-blue-800">How It Works: The Basics</h4>
-                <p>Every day, your goal is to do at least <strong>1 minute of exercise</strong>.</p>
+                <h4 class="text-lg font-bold text-blue-800">How It Works: Three Daily Check-ins</h4>
+                <p>Each day, pick your name and answer three quick questions. You can do all three, or just the ones that apply!</p>
                 <ul class="list-disc list-inside space-y-2">
-                    <li><strong>Log Your Day:</strong> Go to the tracker webpage.</li>
-                    <li><strong>Select Your Name:</strong> Choose your name from the dropdown list.</li>
-                    <li><strong>Answer the Big Question:</strong> Did you get your exercise in?
-                        <ul class="list-disc list-inside ml-6 mt-1">
-                            <li>Click <strong>"Yes"</strong> if you exercised for at least 1 minute. This gets you a Gold Star ⭐!</li>
-                            <li>Click <strong>"No"</strong> if you didn't manage to get it in. No worries, there's always tomorrow!</li>
-                        </ul>
-                    </li>
-                    <li><strong>(Optional) Add Details:</strong> If you clicked "Yes," you can add more details about your workout(s), including the type of activity and how many minutes you did. You can even add a daily message for everyone to see!</li>
-                    <li><strong>Save:</strong> Hit "Save My Entry" and you're done for the day!</li>
+                    <li><strong>⭐ Did you exercise?</strong> "Yes" earns a Gold Star (<strong>5 points</strong>). Add your workout type(s) and minutes — and you can even add a daily message for everyone to see.</li>
+                    <li><strong>🥕 Did you eat healthy?</strong> "Yes" earns <strong>2.5 points</strong>.</li>
+                    <li><strong>💧 Did you drink enough water?</strong> "Yes" earns <strong>2.5 points</strong>. <span class="text-slate-500">(For anyone managing fluids, this question becomes "Did you stay within your fluid limit?" — so the healthy choice still earns the points.)</span></li>
+                    <li><strong>Save:</strong> Hit "Save My Entry" and you're done for the day! A perfect day is <strong>10 points</strong>.</li>
                 </ul>
                 <hr class="my-4">
-                <h4 class="text-lg font-bold text-blue-800">The Main Game: Streaks, Points & Ranking</h4>
+                <h4 class="text-lg font-bold text-blue-800">Seasons: Everyone Gets a Fresh Start</h4>
+                <p>The challenge runs in <strong>3-month seasons</strong>. At the start of each new season, everyone's score resets to zero — so if you've fallen behind, a clean slate is always around the corner. Your past entries stay saved in your calendar; they just don't carry into the new season's score. The current season's dates are shown under the title.</p>
+                <hr class="my-4">
+                <h4 class="text-lg font-bold text-blue-800">Streaks, Bonuses & Ranking</h4>
                  <ul class="list-disc list-inside space-y-2">
-                    <li><strong>Gold Stars & Points:</strong> Every day you earn a Gold Star ⭐, you get <strong>10 points</strong>. These points determine your main rank on the leaderboard.</li>
-                    <li><strong>Streaks & Fire Emojis:</strong> When you get a streak of consecutive exercise days, you'll see fire emojis next to your name. The longer your streak, the more flames you get!
+                    <li><strong>Streaks & Fire Emojis:</strong> String together consecutive exercise days and fire emojis appear next to your name — the longer the streak, the more flames!
                          <ul class="list-none ml-6 mt-1 text-slate-600">
                             <li>3 Days: 3d 🔥</li>
                             <li>5 Days: 5d 🔥🔥</li>
@@ -108,14 +105,14 @@
                             <li>30+ Days: 30d 🔥🔥🔥🔥🔥</li>
                          </ul>
                     </li>
-                    <li><strong>Streak Bonus Points:</strong> You get extra points for hitting these milestones: 5-Day (25pts), 15-Day (25pts), and 25-Day (25pts).</li>
-                    <li><strong>Leaderboard Ranking:</strong> Your rank is based on total points. If there's a tie, the person with the most total minutes exercised gets the higher rank!</li>
+                    <li><strong>Streak Bonus Points:</strong> Earn a one-time bonus of <strong>12.5 points</strong> the first time each season you reach a 5-day, 15-day, and 25-day streak. (Breaking and restarting won't re-earn it!)</li>
+                    <li><strong>Leaderboard Ranking:</strong> Your rank is based on total points this season. Ties are broken by total minutes exercised.</li>
                 </ul>
                  <hr class="my-4">
                 <h4 class="text-lg font-bold text-blue-800">Your Personal Summary</h4>
                  <ul class="list-disc list-inside space-y-2">
-                    <li><strong>Click Your Name:</strong> See a detailed breakdown of your total minutes and a list of all your activities.</li>
-                    <li><strong>Edit Past Entries:</strong> Click the small pencil `✏️` to go back and fix any mistakes on your calendar.</li>
+                    <li><strong>Click Your Name:</strong> See a breakdown of your total minutes and all your activities.</li>
+                    <li><strong>Edit Past Entries:</strong> Click <strong>edit</strong> under your name to fix any day on your calendar.</li>
                 </ul>
                  <hr class="my-4">
                  <p class="text-center font-bold">Have fun, and let's get moving!</p>
@@ -139,12 +136,22 @@
         <form id="day-edit-form" class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto">
              <h2 id="day-edit-title" class="text-2xl font-bold text-blue-900"></h2>
              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">Status</label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">⭐ Exercise Status</label>
                 <select id="day-edit-status" class="w-full p-2 border border-slate-300 rounded-md">
                     <option value="yes">⭐ Gold Star</option>
                     <option value="no">❌ No Star</option>
                     <option value="delete">-- No Entry --</option>
                 </select>
+             </div>
+             <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">🥕 Ate healthy?</label>
+                    <select id="day-edit-ate" class="w-full p-2 border border-slate-300 rounded-md"><option value="no">No</option><option value="yes">Yes</option></select>
+                </div>
+                <div>
+                    <label id="day-edit-water-label" class="block text-sm font-medium text-slate-700 mb-2">💧 Drank water?</label>
+                    <select id="day-edit-water" class="w-full p-2 border border-slate-300 rounded-md"><option value="no">No</option><option value="yes">Yes</option></select>
+                </div>
              </div>
              <div id="day-edit-details" class="space-y-4">
                  <label class="block text-sm font-medium text-slate-700 -mb-2">Describe your workout type and time spent exercising.</label>
@@ -188,12 +195,9 @@
 
         // --- Configuration and State ---
         const familyMembers = ["Von", "Bob", "Mom", "Kate", "Jen"];
-        const activities = ["Kayak", "Power Walking", "Ran", "Bike", "Walking Machine", "Rowing Machine", "Elliptical Machine", "Bike Trainer", "Swim", "Resistance Training", "Weight Lifting", "VR Exercise", "Yoga", "Other"];
-        const activityToEmoji = { "Kayak": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Bike": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "VR Exercise": "🥽", "Yoga": "🧘‍♀️", "Other": "🤸‍♀️" };
+        const activities = ["Kayak", "Power Walking", "Ran", "Bike", "Walking Machine", "Rowing Machine", "Elliptical Machine", "Bike Trainer", "Swim", "Resistance Training", "Weight Lifting", "VR Exercise", "Yoga", "Physiotherapy", "Other"];
+        const activityToEmoji = { "Kayak": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Bike": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "VR Exercise": "🥽", "Yoga": "🧘‍♀️", "Physiotherapy": "🧑‍⚕️", "Other": "🤸‍♀️" };
         const today = new Date();
-        // To run the challenge again in a future year, change these two dates (and the header text above).
-        const challengeStartDate = new Date('2026-06-08T00:00:00Z');
-        const challengeEndDate = new Date('2026-09-30T23:59:59Z');
 
         const toLocalDateString = (date) => {
             const year = date.getFullYear();
@@ -201,12 +205,43 @@
             const day = date.getDate().toString().padStart(2, '0');
             return `${year}-${month}-${day}`;
         };
-        
+
+        // Escape user-supplied text before putting it into HTML (prevents broken markup / injection).
+        const escapeHtml = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        // --- Seasons ---
+        // The program runs year-round in recurring 3-month seasons. At the start of each season
+        // everyone's score resets to 0; past entries stay visible in the calendar/history.
+        const SEASON_MONTHS = 3;
+        const seasonAnchor = new Date(2026, 5, 15); // June 15, 2026 — the first season start (local time).
+        function getSeasonStart(d) {
+            let m = (d.getFullYear() - seasonAnchor.getFullYear()) * 12 + (d.getMonth() - seasonAnchor.getMonth());
+            if (d.getDate() < seasonAnchor.getDate()) m -= 1;
+            const block = Math.floor(m / SEASON_MONTHS) * SEASON_MONTHS;
+            return new Date(seasonAnchor.getFullYear(), seasonAnchor.getMonth() + block, seasonAnchor.getDate());
+        }
+        // Never show/score a season earlier than the very first one (the anchor, June 15 2026).
+        const rawSeasonStart = getSeasonStart(today);
+        const seasonStart = rawSeasonStart < seasonAnchor ? seasonAnchor : rawSeasonStart;
+        const seasonStartString = toLocalDateString(seasonStart);
+        const seasonEnd = new Date(seasonStart.getFullYear(), seasonStart.getMonth() + SEASON_MONTHS, seasonStart.getDate()); // exclusive: next season's start
+
         const todayString = toLocalDateString(today);
-        const isChallengeActive = today >= challengeStartDate && today <= challengeEndDate;
+        const isChallengeActive = true; // runs year-round now
+
+        // Mascot images shown at random in the header. Add more by dropping a processed .webp in images/ and listing it here.
+        const mascotImages = [
+            "images/mascot-strawberry-drink.webp", "images/mascot-strawberry-heart.webp",
+            "images/mascot-01.webp", "images/mascot-02.webp", "images/mascot-03.webp", "images/mascot-04.webp",
+            "images/mascot-05.webp", "images/mascot-06.webp", "images/mascot-07.webp", "images/mascot-08.webp",
+            "images/mascot-09.webp", "images/mascot-10.webp", "images/mascot-11.webp", "images/mascot-12.webp",
+            "images/mascot-13.webp", "images/mascot-14.webp", "images/mascot-15.webp", "images/mascot-16.webp",
+            "images/mascot-17.webp", "images/mascot-18.webp", "images/mascot-19.webp", "images/mascot-20.webp",
+            "images/mascot-21.webp", "images/mascot-22.webp"
+        ];
 
         let db, auth, users = [], entries = {};
-        let selectedUser = "", exercisedToday = null;
+        let selectedUser = "", exercisedToday = null, ateToday = null, waterToday = null;
 
         const formContainer = document.getElementById('form-container');
         const leaderboardContainer = document.getElementById('leaderboard-container');
@@ -214,7 +249,7 @@
         const messageContainer = document.getElementById('message-container');
         const rulesModal = document.getElementById('rules-modal'), rulesCloseBtn = document.getElementById('rules-close-btn'), rulesBtn = document.getElementById('rules-btn');
         const calendarModal = document.getElementById('calendar-modal'), calendarModalTitle = document.getElementById('calendar-modal-title'), calendarContainer = document.getElementById('calendar-container'), calendarCloseBtn = document.getElementById('calendar-close-btn');
-        const dayEditModal = document.getElementById('day-edit-modal'), dayEditForm = document.getElementById('day-edit-form'), dayEditTitle = document.getElementById('day-edit-title'), dayEditStatus = document.getElementById('day-edit-status'), dayEditDetails = document.getElementById('day-edit-details'), dayEditAddWorkout = document.getElementById('day-edit-add-workout'), dayEditCancel = document.getElementById('day-edit-cancel'), dayEditMessage = document.getElementById('day-edit-message');
+        const dayEditModal = document.getElementById('day-edit-modal'), dayEditForm = document.getElementById('day-edit-form'), dayEditTitle = document.getElementById('day-edit-title'), dayEditStatus = document.getElementById('day-edit-status'), dayEditDetails = document.getElementById('day-edit-details'), dayEditAddWorkout = document.getElementById('day-edit-add-workout'), dayEditCancel = document.getElementById('day-edit-cancel'), dayEditMessage = document.getElementById('day-edit-message'), dayEditAte = document.getElementById('day-edit-ate'), dayEditWater = document.getElementById('day-edit-water'), dayEditWaterLabel = document.getElementById('day-edit-water-label');
         const statsModal = document.getElementById('stats-modal'), statsModalTitle = document.getElementById('stats-modal-title'), statsModalContent = document.getElementById('stats-modal-content'), statsCloseBtn = document.getElementById('stats-close-btn');
         const messageModal = document.getElementById('message-modal'), messageModalTitle = document.getElementById('message-modal-title'), messageModalContent = document.getElementById('message-modal-content'), messageCloseBtn = document.getElementById('message-close-btn');
 
@@ -245,7 +280,11 @@
                 card.className = 'bg-slate-50 rounded-lg p-4 flex justify-between items-center transition-transform duration-200 hover:scale-105';
                 
                 const dailyEntry = entries[user.name];
-                const dailyStatus = dailyEntry ? (dailyEntry.exercised ? '⭐' : '❌') : '…';
+                const dayIcon = (done, emoji, title) => `<span title="${title}" class="${done ? '' : 'opacity-20 grayscale'}">${emoji}</span>`;
+                const waterTitle = user.name === 'Jen' ? 'Stayed within fluid limit' : 'Drank water';
+                const dailyStatus = dailyEntry
+                    ? `${dayIcon(dailyEntry.exercised, '⭐', 'Exercised')}${dayIcon(dailyEntry.ateWell, '🥕', 'Ate healthy')}${dayIcon(dailyEntry.drankWater, '💧', waterTitle)}`
+                    : '<span class="text-slate-300">…</span>';
                 
                 let streakDisplay = '-';
                 if(user.currentStreak > 0) {
@@ -259,11 +298,11 @@
                 }
 
                 const trophyIcon = user.points > 0 && user.points === maxScore ? `<span class="text-xl">🏆</span>` : '';
-                const messageIcon = dailyEntry?.message ? `<button data-user="${user.name}" data-message="${dailyEntry.message}" class="message-btn text-lg ml-2">💬</button>` : '';
+                const messageIcon = dailyEntry?.message ? `<button data-user="${user.name}" data-message="${escapeHtml(dailyEntry.message)}" class="message-btn text-lg ml-2">💬</button>` : '';
 
                 card.innerHTML = `
                     <div class="flex items-center">
-                        <div class="text-3xl text-center w-10">${dailyStatus}</div>
+                        <div class="text-xl flex items-center justify-center space-x-0.5 w-24">${dailyStatus}</div>
                         <div class="ml-4">
                             <div class="flex items-center">
                                 <button data-user="${user.name}" class="name-btn text-left text-lg font-bold text-slate-800 hover:underline focus:outline-none">${user.name}</button>
@@ -299,19 +338,23 @@
                 formContainer.innerHTML = `<div class="bg-white rounded-xl shadow-lg p-6 text-center mb-8"><h2 class="text-2xl font-bold text-blue-900 mb-4">The Challenge is Over!</h2><p class="text-slate-600">Thanks for participating.</p></div>`;
                 return;
             }
-            let userOptions = `<option value="" disabled ${selectedUser === "" ? "selected" : ""}>---</option>${familyMembers.map(n => `<option value="${n}" ${n === selectedUser ? 'selected' : ''}>${n}</option>`).join('')}`;
+            const userOptions = `<option value="" disabled ${selectedUser === "" ? "selected" : ""}>---</option>${familyMembers.map(n => `<option value="${n}" ${n === selectedUser ? 'selected' : ''}>${n}</option>`).join('')}`;
             const hasSubmitted = selectedUser && !!entries[selectedUser];
+            const yn = (val, target, color) => `flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${val === target ? color + ' text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+            const waterQuestion = selectedUser === 'Jen' ? 'Did you stay within your fluid limit today? 💧' : 'Did you drink enough water today? 💧';
             formContainer.innerHTML = `<div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                    <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Log Today's Exercise</h2>
+                    <h2 class="text-2xl font-bold text-center text-blue-900 mb-6">Log Today's Check-ins</h2>
                     <form id="entry-form" class="space-y-6">
                         <div><label for="user-select" class="block text-sm font-medium text-slate-700 mb-1">Who are you?</label><select id="user-select" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-slate-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md shadow-sm">${userOptions}</select></div>
-                        <div><label class="block text-sm font-medium text-slate-700 mb-2">Did you earn a gold star today? <span class="text-red-500">*</span></label><div class="flex items-center space-x-4"><button type="button" id="yes-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'yes' ? 'bg-blue-600 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">Yes</button><button type="button" id="no-btn" class="flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${exercisedToday === 'no' ? 'bg-red-500 text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}">No</button></div></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">⭐ Did you exercise today? <span class="text-slate-400 font-normal">(5 pts)</span> <span class="text-red-500">*</span></label><div class="flex items-center space-x-4"><button type="button" id="yes-btn" class="${yn(exercisedToday, 'yes', 'bg-blue-600')}">Yes</button><button type="button" id="no-btn" class="${yn(exercisedToday, 'no', 'bg-red-500')}">No</button></div></div>
                         <div id="optional-fields" class="${exercisedToday === 'yes' ? 'space-y-4 animate-fade-in' : 'hidden'}">
                             <label class="block text-sm font-medium text-slate-700 -mb-2">Describe your workout type and time spent exercising.</label>
                             <div id="workouts-container" class="space-y-2"></div>
                             <button type="button" id="add-workout-btn" class="w-full text-sm py-2 px-4 bg-slate-100 hover:bg-slate-200 rounded-md">+ Add Workout</button>
-                            <div><label for="daily-message" class="block text-sm font-medium text-slate-700">Daily Message (optional)</label><textarea id="daily-message" rows="2" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Feeling great!"></textarea></div>
                         </div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">🥕 Did you eat healthy today? <span class="text-slate-400 font-normal">(2.5 pts)</span></label><div class="flex items-center space-x-4"><button type="button" id="eat-yes-btn" class="${yn(ateToday, 'yes', 'bg-green-600')}">Yes</button><button type="button" id="eat-no-btn" class="${yn(ateToday, 'no', 'bg-red-500')}">No</button></div></div>
+                        <div><label class="block text-sm font-medium text-slate-700 mb-2">${waterQuestion} <span class="text-slate-400 font-normal">(2.5 pts)</span></label><div class="flex items-center space-x-4"><button type="button" id="water-yes-btn" class="${yn(waterToday, 'yes', 'bg-cyan-600')}">Yes</button><button type="button" id="water-no-btn" class="${yn(waterToday, 'no', 'bg-red-500')}">No</button></div></div>
+                        <div><label for="daily-message" class="block text-sm font-medium text-slate-700">Daily Message (optional)</label><textarea id="daily-message" rows="2" class="mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Feeling great!"></textarea></div>
                         <div><button type="submit" id="submit-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-blue-700 hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-slate-400" ${hasSubmitted || exercisedToday === null || !selectedUser ? 'disabled' : ''}>${hasSubmitted ? 'Entry Submitted' : 'Save My Entry'}</button></div>
                     </form>
                 </div>`;
@@ -322,12 +365,25 @@
         function addWorkoutRow(containerId, workout = { activity: '', minutes: '' }) {
             const container = document.getElementById(containerId);
             const workoutDiv = document.createElement('div');
-            workoutDiv.className = 'workout-item flex items-center space-x-2';
-            let activityOptions = `<option value="">---</option>` + activities.map(a => `<option value="${a}" ${a === workout.activity ? 'selected' : ''}>${a}</option>`).join('');
-            workoutDiv.innerHTML = `<select class="activity-select mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">${activityOptions}</select>
-                <input type="number" min="0" class="minutes-input mt-1 block w-28 border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Mins" value="${workout.minutes}">
-                <button type="button" class="remove-workout-btn text-red-500 hover:text-red-700 font-bold py-2 px-2 rounded-md">&times;</button>`;
+            workoutDiv.className = 'workout-item space-y-2';
+            // If a saved activity isn't in the standard list, it's a custom one: show "Other" + the text box.
+            const isCustom = workout.activity && !activities.includes(workout.activity);
+            const selectValue = isCustom ? 'Other' : workout.activity;
+            const activityOptions = `<option value="">---</option>` + activities.map(a => `<option value="${a}" ${a === selectValue ? 'selected' : ''}>${a}</option>`).join('');
+            workoutDiv.innerHTML = `<div class="flex items-center space-x-2">
+                    <select class="activity-select mt-1 block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500">${activityOptions}</select>
+                    <input type="number" min="0" class="minutes-input mt-1 block w-28 border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Mins" value="${escapeHtml(workout.minutes)}">
+                    <button type="button" class="remove-workout-btn text-red-500 hover:text-red-700 font-bold py-2 px-2 rounded-md">&times;</button>
+                </div>
+                <input type="text" maxlength="40" class="custom-activity ${isCustom ? '' : 'hidden'} block w-full border border-slate-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500" placeholder="Name your own activity" value="${escapeHtml(isCustom ? workout.activity : '')}">`;
             container.appendChild(workoutDiv);
+            const select = workoutDiv.querySelector('.activity-select');
+            const custom = workoutDiv.querySelector('.custom-activity');
+            select.addEventListener('change', () => {
+                const showCustom = select.value === 'Other';
+                custom.classList.toggle('hidden', !showCustom);
+                if (showCustom) custom.focus();
+            });
             workoutDiv.querySelector('.remove-workout-btn').addEventListener('click', () => workoutDiv.remove());
         }
 
@@ -343,7 +399,7 @@
                 let dayClass = 'bg-slate-100 hover:bg-blue-100', content = `<span class="text-slate-600">${date.getDate()}</span>`;
                 if(entry) { content = entry.exercised ? '⭐' : '❌'; dayClass = entry.exercised ? 'bg-amber-200 hover:bg-amber-300' : 'bg-red-200 hover:bg-red-300'; }
                 const fullDate = new Date(date);
-                if (fullDate < challengeStartDate || fullDate > today) html += `<div class="flex items-center justify-center rounded-lg calendar-day bg-slate-50 text-slate-300"><span class="text-slate-400">${date.getDate()}</span></div>`;
+                if (fullDate > today) html += `<div class="flex items-center justify-center rounded-lg calendar-day bg-slate-50 text-slate-300"><span class="text-slate-400">${date.getDate()}</span></div>`;
                 else html += `<div data-date="${dayStr}" data-user="${userName}" class="edit-day-btn flex items-center justify-center rounded-lg calendar-day cursor-pointer ${dayClass}">${content}</div>`;
                 date.setDate(date.getDate() + 1);
             }
@@ -351,9 +407,36 @@
         }
 
         function addFormEventListeners() {
-            document.getElementById('user-select').addEventListener('change', (e) => { selectedUser = e.target.value; exercisedToday = null; renderForm(); });
-            document.getElementById('yes-btn').addEventListener('click', () => { exercisedToday = 'yes'; renderForm(); });
-            document.getElementById('no-btn').addEventListener('click', () => { exercisedToday = 'no'; renderForm(); });
+            const setActive = (btn, on, color) => {
+                btn.className = `flex-1 py-3 px-4 rounded-lg text-center font-semibold transition-all duration-200 ${on ? color + ' text-white shadow-md' : 'bg-slate-200 text-slate-700 hover:bg-slate-300'}`;
+            };
+            const refreshSubmit = () => {
+                const btn = document.getElementById('submit-btn');
+                btn.disabled = (selectedUser && !!entries[selectedUser]) || exercisedToday === null || !selectedUser;
+            };
+            // Changing user resets the day; full re-render is fine here.
+            document.getElementById('user-select').addEventListener('change', (e) => { selectedUser = e.target.value; exercisedToday = null; ateToday = null; waterToday = null; renderForm(); });
+            // The yes/no toggles update in place (no full re-render) so typed workouts/messages aren't lost.
+            const yesBtn = document.getElementById('yes-btn'), noBtn = document.getElementById('no-btn'), optional = document.getElementById('optional-fields');
+            yesBtn.addEventListener('click', () => {
+                exercisedToday = 'yes';
+                setActive(yesBtn, true, 'bg-blue-600'); setActive(noBtn, false, 'bg-red-500');
+                optional.className = 'space-y-4 animate-fade-in';
+                if (!document.querySelector('#workouts-container .workout-item')) addWorkoutRow('workouts-container');
+                refreshSubmit();
+            });
+            noBtn.addEventListener('click', () => {
+                exercisedToday = 'no';
+                setActive(noBtn, true, 'bg-red-500'); setActive(yesBtn, false, 'bg-blue-600');
+                optional.className = 'hidden';
+                refreshSubmit();
+            });
+            const eatYes = document.getElementById('eat-yes-btn'), eatNo = document.getElementById('eat-no-btn');
+            eatYes.addEventListener('click', () => { ateToday = 'yes'; setActive(eatYes, true, 'bg-green-600'); setActive(eatNo, false, 'bg-red-500'); });
+            eatNo.addEventListener('click', () => { ateToday = 'no'; setActive(eatNo, true, 'bg-red-500'); setActive(eatYes, false, 'bg-green-600'); });
+            const waterYes = document.getElementById('water-yes-btn'), waterNo = document.getElementById('water-no-btn');
+            waterYes.addEventListener('click', () => { waterToday = 'yes'; setActive(waterYes, true, 'bg-cyan-600'); setActive(waterNo, false, 'bg-red-500'); });
+            waterNo.addEventListener('click', () => { waterToday = 'no'; setActive(waterNo, true, 'bg-red-500'); setActive(waterYes, false, 'bg-cyan-600'); });
             document.getElementById('add-workout-btn')?.addEventListener('click', () => addWorkoutRow('workouts-container'));
             document.getElementById('entry-form').addEventListener('submit', handleFormSubmit);
         }
@@ -362,20 +445,26 @@
             e.preventDefault();
             if (exercisedToday === null || !selectedUser) return;
             const exercised = exercisedToday === 'yes';
-            const workouts = [];
-            if (exercised) {
-                document.querySelectorAll('#workouts-container .workout-item').forEach(item => {
-                    const activity = item.querySelector('.activity-select').value;
-                    const minutes = Math.max(0, parseInt(item.querySelector('.minutes-input').value, 10) || 0);
-                    if (activity && minutes > 0) workouts.push({ activity, minutes });
-                });
-            }
+            const workouts = exercised ? collectWorkouts('#workouts-container') : [];
             const message = document.getElementById('daily-message')?.value || '';
-            const entryData = { name: selectedUser, date: todayString, exercised: exercised && workouts.length > 0, workouts, message };
+            const entryData = { name: selectedUser, date: todayString, exercised: exercised && workouts.length > 0, ateWell: ateToday === 'yes', drankWater: waterToday === 'yes', workouts, message };
             await setDoc(doc(db, `artifacts/${appId}/public/data/entries`, `${selectedUser}_${todayString}`), entryData);
             await recalculateAndSaveUserStats(selectedUser);
             showMessage('success', `Entry saved for ${selectedUser}.`);
-            exercisedToday = null;
+            exercisedToday = null; ateToday = null; waterToday = null;
+        }
+
+        // Reads workout rows from a container, resolving the "Other" + custom name case.
+        function collectWorkouts(containerSelector) {
+            const workouts = [];
+            document.querySelectorAll(`${containerSelector} .workout-item`).forEach(item => {
+                let activity = item.querySelector('.activity-select').value;
+                const customEl = item.querySelector('.custom-activity');
+                if (activity === 'Other' && customEl && customEl.value.trim()) activity = customEl.value.trim();
+                const minutes = Math.max(0, parseInt(item.querySelector('.minutes-input').value, 10) || 0);
+                if (activity && activity !== 'Other' && minutes > 0) workouts.push({ activity, minutes });
+            });
+            return workouts;
         }
 
         async function openCalendarModal(userName) {
@@ -385,10 +474,10 @@
             const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
             const userEntries = snapshot.docs.map(d => d.data());
-            // Build the list of months spanned by the challenge (derived from the dates above, so it auto-updates each year).
+            // Show the months covered by the current season.
             const calendarMonths = [];
-            let monthCursor = new Date(challengeStartDate.getFullYear(), challengeStartDate.getMonth(), 1);
-            const lastMonth = new Date(challengeEndDate.getFullYear(), challengeEndDate.getMonth(), 1);
+            let monthCursor = new Date(seasonStart.getFullYear(), seasonStart.getMonth(), 1);
+            const lastMonth = new Date(seasonEnd.getFullYear(), seasonEnd.getMonth(), 1);
             while (monthCursor <= lastMonth) {
                 calendarMonths.push({ year: monthCursor.getFullYear(), month: monthCursor.getMonth() });
                 monthCursor.setMonth(monthCursor.getMonth() + 1);
@@ -404,6 +493,9 @@
             dayEditTitle.textContent = `Edit for ${localDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', timeZone: 'UTC' })}`;
             dayEditStatus.value = entry.exercised === false ? 'no' : (entry.workouts && entry.workouts.length > 0 ? 'yes' : 'delete');
             dayEditMessage.value = entry.message || '';
+            dayEditAte.value = entry.ateWell ? 'yes' : 'no';
+            dayEditWater.value = entry.drankWater ? 'yes' : 'no';
+            dayEditWaterLabel.textContent = userName === 'Jen' ? '💧 Within fluid limit?' : '💧 Drank water?';
             const container = document.getElementById('day-edit-workouts-container');
             container.innerHTML = '';
             const workoutsToDisplay = entry.workouts && entry.workouts.length > 0 ? entry.workouts : [{ activity: '', minutes: '' }];
@@ -423,16 +515,9 @@
             if (status === 'delete') await deleteDoc(entryRef);
             else {
                 const exercised = status === 'yes';
-                const workouts = [];
                 const message = dayEditMessage.value || '';
-                if (exercised) {
-                    document.querySelectorAll('#day-edit-workouts-container .workout-item').forEach(item => {
-                        const activity = item.querySelector('.activity-select').value;
-                        const minutes = Math.max(0, parseInt(item.querySelector('.minutes-input').value, 10) || 0);
-                        if (activity && minutes > 0) workouts.push({ activity, minutes });
-                    });
-                }
-                await setDoc(entryRef, { name: userName, date: dateStr, exercised: exercised && workouts.length > 0, workouts, message });
+                const workouts = exercised ? collectWorkouts('#day-edit-workouts-container') : [];
+                await setDoc(entryRef, { name: userName, date: dateStr, exercised: exercised && workouts.length > 0, ateWell: dayEditAte.value === 'yes', drankWater: dayEditWater.value === 'yes', workouts, message });
             }
             await recalculateAndSaveUserStats(userName);
             dayEditModal.classList.add('hidden'); calendarModal.classList.add('hidden');
@@ -487,7 +572,7 @@
                             <div class="flex items-center text-sm mb-1">
                                 <span class="font-bold text-slate-700 flex items-center">
                                     <span class="text-lg mr-2">${activityToEmoji[activity] || '❓'}</span>
-                                    <span>${activity}</span>
+                                    <span>${escapeHtml(activity)}</span>
                                     <span class="text-slate-500 text-xs ml-4">x ${data.count}</span>
                                 </span>
                             </div>
@@ -511,45 +596,52 @@
         async function recalculateAndSaveUserStats(userName) {
             const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
-            const userEntries = snapshot.docs.map(d => d.data()).sort((a,b) => a.date.localeCompare(b.date));
-            
+            // Only the CURRENT season counts toward the score; older entries stay in history but don't carry over.
+            const userEntries = snapshot.docs.map(d => d.data())
+                .filter(e => e.date >= seasonStartString && e.date <= todayString)
+                .sort((a, b) => a.date.localeCompare(b.date));
+
             let newPoints = 0, streak = 0, lastDate = null, totalMinutes = 0;
             const streakMilestones = [5, 15, 25];
-            // Each milestone bonus is earned only ONCE per person (it's an achievement, per the rules).
-            // This stops people from farming the cheap 5-day bonus by repeatedly breaking and restarting a streak.
+            // Each milestone bonus is earned only ONCE per season (it's an achievement, per the rules) —
+            // this stops farming the cheap 5-day bonus by repeatedly breaking and restarting a streak.
             const awardedMilestones = new Set();
 
             for (const entry of userEntries) {
                 totalMinutes += entry.workouts?.reduce((s, w) => s + (w.minutes || 0), 0) || 0;
-                const entryDate = new Date(entry.date + "T00:00:00");
-                if (entryDate > today) continue;
+                if (entry.exercised) newPoints += 5;     // exercise gold star
+                if (entry.ateWell) newPoints += 2.5;     // healthy eating
+                if (entry.drankWater) newPoints += 2.5;  // water (for Jen: stayed within fluid limit)
                 if (entry.exercised) {
-                    newPoints += 10;
                     const currentDate = new Date(entry.date + 'T12:00:00Z');
                     if (lastDate) streak = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24)) === 1 ? streak + 1 : 1;
                     else streak = 1;
                     if (streakMilestones.includes(streak) && !awardedMilestones.has(streak)) {
-                        newPoints += 25;
+                        newPoints += 12.5; // streak milestone bonus
                         awardedMilestones.add(streak);
                     }
                     lastDate = currentDate;
                 } else { streak = 0; }
             }
             let currentStreak = 0, lastStreakDate = null;
-            const entriesUpToToday = userEntries.filter(e => new Date(e.date + "T00:00:00Z") <= today);
-            for (let i = entriesUpToToday.length - 1; i >= 0; i--) {
-                const entry = entriesUpToToday[i];
-                 if (entry.exercised) {
+            for (let i = userEntries.length - 1; i >= 0; i--) {
+                const entry = userEntries[i];
+                if (entry.exercised) {
                     const currentDate = new Date(entry.date + 'T12:00:00Z');
                     if (lastStreakDate && Math.round((lastStreakDate - currentDate) / (1000 * 60 * 60 * 24)) !== 1) break;
                     currentStreak++; lastStreakDate = currentDate;
-                 } else { break; }
+                } else { break; }
             }
+            newPoints = Math.round(newPoints * 10) / 10; // avoid floating-point noise from the 2.5s
             await setDoc(doc(db, `artifacts/${appId}/public/data/users`, userName), { points: newPoints, currentStreak: currentStreak, name: userName, totalMinutes: totalMinutes }, { merge: true });
         }
         
         async function main() {
             todayDateEl.textContent = `Today is: ${today.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`;
+            const seasonLastDay = new Date(seasonEnd.getFullYear(), seasonEnd.getMonth(), seasonEnd.getDate() - 1);
+            document.getElementById('season-label').textContent = `Current season: ${seasonStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${seasonLastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+            const mascot = document.getElementById('mascot-img');
+            if (mascot && mascotImages.length) mascot.src = mascotImages[Math.floor(Math.random() * mascotImages.length)];
             renderForm();
             try {
                 const app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app);

@@ -1,55 +1,69 @@
-# Summer Streak Challenge 🏆
+# Fit Family Streak Challenge 🍓🏆
 
-A simple family exercise-tracking web app. Each summer, family members log a
-daily workout to earn gold stars, build streaks, and climb a shared leaderboard.
-The whole point is encouragement, not competition — *you win just by playing.*
+A simple family health-tracking web app. Family members log daily check-ins —
+exercise, healthy eating, and water — to earn points, build streaks, and climb a
+shared leaderboard. The whole point is encouragement, not competition —
+*you win just by playing.*
 
 ## What it does
 
-- **Log your day:** pick your name, answer "did you earn a gold star today?" and
-  (optionally) record what you did and for how many minutes, plus a daily message.
-- **Leaderboard:** shows everyone's status for today, current streak, and total
-  points, with a 🏆 next to whoever's leading.
-- **Personal summary:** click a name to see total minutes and a breakdown by
-  activity.
+- **Three daily check-ins:** pick your name, then answer:
+  - ⭐ Did you exercise? (optionally log workout type(s) + minutes, and a daily message)
+  - 🥕 Did you eat healthy?
+  - 💧 Did you drink enough water? *(for anyone managing fluids, this becomes
+    "stayed within your fluid limit" so the healthy choice still earns points)*
+- **Leaderboard:** shows each person's check-ins for today, current streak, and
+  total points this season, with a 🏆 next to whoever's leading.
+- **Personal summary:** click a name to see total minutes and a breakdown by activity.
 - **Edit past days:** click *edit* to open a calendar and fix any day.
+- **Seasons:** scores reset every 3 months for a fresh start (see below).
 
 ## How it's built
 
 A single, self-contained HTML file — no build step, no server of our own.
 
 - **`fit-tracker.html`** — the app the family uses.
-- **`fit-tracker-for-Von.html`** — an alternate version that adds daily 🥇/🥈
-  medals and a "Yesterday's Winners" banner. Kept for reference; not the one in use.
+- **`fit-tracker-for-Von.html`** — an older alternate version with daily 🥇/🥈
+  medals. Kept for reference; not the one in use.
 - **[Tailwind CSS](https://tailwindcss.com/)** (via CDN) for styling.
 - **[Firebase](https://firebase.google.com/)** (Firestore + Anonymous Auth) for
   shared data, so everyone sees the same leaderboard in real time.
+- **`images/`** — header mascots (transparent WebP). One is shown at random on
+  each load. Source files are kept in `images/originals/`.
 
 Just open `fit-tracker.html` in a browser to run it.
 
 ## Scoring rules
 
-- **+10 points** for every day you earn a gold star (1+ minute of exercise).
-- **Streak bonuses:** +25 points the first time you reach a **5-day**, **15-day**,
-  and **25-day** streak. Each milestone is earned **once per person** — breaking
-  and restarting a streak does *not* re-award it.
+A perfect day is **10 points**:
+
+- ⭐ **Exercise** gold star — **5 points**
+- 🥕 **Healthy eating** — **2.5 points**
+- 💧 **Water** (or staying within a fluid limit) — **2.5 points**
+- **Streak bonus:** **+12.5 points** the first time *each season* you reach a
+  **5-day**, **15-day**, and **25-day** exercise streak. Earned once per season —
+  breaking and restarting a streak does *not* re-award it.
 - **Streak flames** appear next to your name: 🔥 at 3 days, scaling up to
   🔥🔥🔥🔥🔥 at 30+.
-- **Ranking** is by total points; ties are broken by total minutes exercised.
+- **Ranking** is by total points this season; ties broken by total minutes exercised.
 
-## Maintenance
+## Seasons
 
-### Run a new season (change the year)
+The challenge runs year-round in recurring **3-month seasons**. At the start of
+each season everyone's score resets to zero (past entries stay in the calendar but
+don't carry into the new season's score). Seasons are anchored to **June 15, 2026**
+and recur every 3 months (Sep 15, Dec 15, Mar 15, …). The current season's dates
+show under the title.
 
-Edit the two date constants near the top of the `<script>` in `fit-tracker.html`:
+To change the cadence or start, edit these near the top of the `<script>` in
+`fit-tracker.html`:
 
 ```js
-const challengeStartDate = new Date('2026-06-08T00:00:00Z');
-const challengeEndDate   = new Date('2026-09-30T23:59:59Z');
+const SEASON_MONTHS = 3;
+const seasonAnchor = new Date(2026, 5, 15); // note: month is 0-indexed, so 5 = June
 ```
 
-Also update the date shown in the header (`<p>June 8, 2026 - September 30, 2026</p>`).
-The edit-calendar months are derived from these dates automatically.
+## Maintenance
 
 ### Family members
 
@@ -60,7 +74,19 @@ const familyMembers = ["Von", "Bob", "Mom", "Kate", "Jen"];
 ```
 
 If you change it, also update the allowed names in `firestore.rules` (the
-`isFamily` list) and redeploy the rules (below).
+`isFamily` list) and redeploy the rules (below). The flipped water question is
+currently tied to the name `"Jen"` (search the file for `'Jen'`).
+
+### Adding header mascots
+
+Drop a new image into `images/`, then process it to a transparent WebP and add its
+path to the `mascotImages` array in `fit-tracker.html`. (Background removal was done
+with a small Pillow flood-fill script; ask Claude to reprocess new ones.)
+
+### Custom workouts
+
+Anyone can pick **Other** in a workout row and type their own activity name — no
+code change needed. It shows up in their personal summary with a ❓ icon.
 
 ### Firebase / security rules
 
