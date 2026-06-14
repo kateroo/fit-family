@@ -47,7 +47,7 @@
             <!-- Header -->
             <header class="text-center mb-8">
                 <h1 class="text-4xl sm:text-5xl font-bold text-blue-900">Summer Streak Challenge</h1>
-                <p class="text-lg text-blue-800/90 mt-2">June 8, 2025 - September 30, 2025</p>
+                <p class="text-lg text-blue-800/90 mt-2">June 8, 2026 - September 30, 2026</p>
                 <p id="today-date" class="text-md text-slate-500 mt-1"></p>
                 <button id="rules-btn" class="mt-2 text-sm text-blue-600 hover:underline">How to Play</button>
             </header>
@@ -189,10 +189,11 @@
         // --- Configuration and State ---
         const familyMembers = ["Von", "Bob", "Mom", "Kate", "Jen"];
         const activities = ["Kayak", "Power Walking", "Ran", "Bike", "Walking Machine", "Rowing Machine", "Elliptical Machine", "Bike Trainer", "Swim", "Resistance Training", "Weight Lifting", "VR Exercise", "Yoga", "Other"];
-        const activityToEmoji = { "Kayak": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Bike": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "VR Exercise": "�", "Yoga": "🧘‍♀️", "Other": "🤸‍♀️" };
+        const activityToEmoji = { "Kayak": "🛶", "Power Walking": "🚶‍♀️", "Ran": "🏃‍♀️", "Bike": "🚲", "Walking Machine": "🚶", "Rowing Machine": "🚣‍♀️", "Elliptical Machine": "⚙️", "Bike Trainer": "🚴‍♀️", "Swim": "🏊‍♀️", "Resistance Training": "💪", "Weight Lifting": "🏋️‍♀️", "VR Exercise": "🥽", "Yoga": "🧘‍♀️", "Other": "🤸‍♀️" };
         const today = new Date();
-        const challengeStartDate = new Date('2025-06-08T00:00:00Z');
-        const challengeEndDate = new Date('2025-09-30T23:59:59Z');
+        // To run the challenge again in a future year, change these two dates (and the header text above).
+        const challengeStartDate = new Date('2026-06-08T00:00:00Z');
+        const challengeEndDate = new Date('2026-09-30T23:59:59Z');
 
         const toLocalDateString = (date) => {
             const year = date.getFullYear();
@@ -384,7 +385,15 @@
             const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
             const userEntries = snapshot.docs.map(d => d.data());
-            calendarContainer.innerHTML = [2025].flatMap(year => [5,6,7,8].map(month => generateCalendar(month, year, userEntries, userName))).join('<div class="my-3"></div>');
+            // Build the list of months spanned by the challenge (derived from the dates above, so it auto-updates each year).
+            const calendarMonths = [];
+            let monthCursor = new Date(challengeStartDate.getFullYear(), challengeStartDate.getMonth(), 1);
+            const lastMonth = new Date(challengeEndDate.getFullYear(), challengeEndDate.getMonth(), 1);
+            while (monthCursor <= lastMonth) {
+                calendarMonths.push({ year: monthCursor.getFullYear(), month: monthCursor.getMonth() });
+                monthCursor.setMonth(monthCursor.getMonth() + 1);
+            }
+            calendarContainer.innerHTML = calendarMonths.map(({ year, month }) => generateCalendar(month, year, userEntries, userName)).join('<div class="my-3"></div>');
             document.querySelectorAll('.edit-day-btn').forEach(btn => btn.addEventListener('click', () => openDayEditModal(btn.dataset.user, btn.dataset.date)));
         }
 
@@ -506,6 +515,9 @@
             
             let newPoints = 0, streak = 0, lastDate = null, totalMinutes = 0;
             const streakMilestones = [5, 15, 25];
+            // Each milestone bonus is earned only ONCE per person (it's an achievement, per the rules).
+            // This stops people from farming the cheap 5-day bonus by repeatedly breaking and restarting a streak.
+            const awardedMilestones = new Set();
 
             for (const entry of userEntries) {
                 totalMinutes += entry.workouts?.reduce((s, w) => s + (w.minutes || 0), 0) || 0;
@@ -516,7 +528,10 @@
                     const currentDate = new Date(entry.date + 'T12:00:00Z');
                     if (lastDate) streak = Math.round((currentDate - lastDate) / (1000 * 60 * 60 * 24)) === 1 ? streak + 1 : 1;
                     else streak = 1;
-                    if (streakMilestones.includes(streak)) newPoints += 25;
+                    if (streakMilestones.includes(streak) && !awardedMilestones.has(streak)) {
+                        newPoints += 25;
+                        awardedMilestones.add(streak);
+                    }
                     lastDate = currentDate;
                 } else { streak = 0; }
             }

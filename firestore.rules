@@ -1,0 +1,44 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Must be signed in (the app signs everyone in anonymously on load).
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Only these names are allowed to appear in the data.
+    function isFamily(n) {
+      return n is string && n in ['Von', 'Bob', 'Mom', 'Kate', 'Jen'];
+    }
+
+    match /artifacts/{appId}/public/data {
+
+      // Daily exercise entries. Doc id is "Name_YYYY-MM-DD".
+      match /entries/{entryId} {
+        allow read, delete: if signedIn();
+        allow create, update: if signedIn()
+          && isFamily(request.resource.data.name)
+          && request.resource.data.date is string
+          && request.resource.data.exercised is bool
+          && request.resource.data.workouts is list
+          && (
+               !('message' in request.resource.data)
+               || (request.resource.data.message is string
+                   && request.resource.data.message.size() <= 500)
+             );
+      }
+
+      // Aggregate per-person stats (points, streak, totals). Doc id is the name.
+      match /users/{userId} {
+        allow read: if signedIn();
+        allow write: if signedIn() && isFamily(request.resource.data.name);
+      }
+
+      // App state used by some versions (e.g. daily medals). Harmless if unused.
+      match /meta/{docId} {
+        allow read, write: if signedIn();
+      }
+    }
+  }
+}
