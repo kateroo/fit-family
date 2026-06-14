@@ -28,8 +28,10 @@ A single, self-contained HTML file — no build step, no server of our own.
 - **[Tailwind CSS](https://tailwindcss.com/)** (via CDN) for styling.
 - **[Firebase](https://firebase.google.com/)** (Firestore + Anonymous Auth) for
   shared data, so everyone sees the same leaderboard in real time.
-- **`images/`** — header mascots (transparent WebP). One is shown at random on
-  each load. Source files are kept in `images/originals/`.
+- **`images/`** — header mascots (transparent WebP). One is shown per day —
+  **the same one for everyone** — cycling through the set via a fixed shuffled
+  order indexed by calendar date. Specific days can be overridden (e.g. Jen's
+  birthday on June 18 shows the cake). Source files are kept in `images/originals/`.
 
 Just open `fit-tracker.html` in a browser to run it.
 
@@ -81,7 +83,11 @@ currently tied to the name `"Jen"` (search the file for `'Jen'`).
 
 Drop a new image into `images/`, then process it to a transparent WebP and add its
 path to the `mascotImages` array in `fit-tracker.html`. (Background removal was done
-with a small Pillow flood-fill script; ask Claude to reprocess new ones.)
+with a small Pillow flood-fill script; ask Claude to reprocess new ones.) The same
+mascot shows for everyone each day, advancing through the list by date.
+
+To show a special mascot on a particular day, add it to the `birthdayMascots` map
+(keyed by `"MM-DD"`) right below the array — e.g. `"12-25": "images/mascot-xmas.webp"`.
 
 ### Custom workouts
 

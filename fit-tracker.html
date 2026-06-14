@@ -230,16 +230,21 @@
         const todayString = toLocalDateString(today);
         const isChallengeActive = true; // runs year-round now
 
-        // Mascot images shown at random in the header. Add more by dropping a processed .webp in images/ and listing it here.
+        // Header mascots. Everyone sees the SAME mascot on a given day: a fixed pre-shuffled order
+        // is stepped through by calendar date, cycling through all of them over about a month.
+        // To add more: process a .webp into images/ and add it to this list.
         const mascotImages = [
-            "images/mascot-strawberry-drink.webp", "images/mascot-strawberry-heart.webp",
-            "images/mascot-01.webp", "images/mascot-02.webp", "images/mascot-03.webp", "images/mascot-04.webp",
-            "images/mascot-05.webp", "images/mascot-06.webp", "images/mascot-07.webp", "images/mascot-08.webp",
-            "images/mascot-09.webp", "images/mascot-10.webp", "images/mascot-11.webp", "images/mascot-12.webp",
-            "images/mascot-13.webp", "images/mascot-14.webp", "images/mascot-15.webp", "images/mascot-16.webp",
-            "images/mascot-17.webp", "images/mascot-18.webp", "images/mascot-19.webp", "images/mascot-20.webp",
-            "images/mascot-21.webp", "images/mascot-22.webp"
+            "images/mascot-02.webp", "images/mascot-28.webp", "images/mascot-23.webp", "images/mascot-04.webp",
+            "images/mascot-06.webp", "images/mascot-15.webp", "images/mascot-07.webp", "images/mascot-strawberry-drink.webp",
+            "images/mascot-strawberry-heart.webp", "images/mascot-10.webp", "images/mascot-20.webp", "images/mascot-14.webp",
+            "images/mascot-26.webp", "images/mascot-19.webp", "images/mascot-18.webp", "images/mascot-09.webp",
+            "images/mascot-01.webp", "images/mascot-21.webp", "images/mascot-22.webp", "images/mascot-17.webp",
+            "images/mascot-03.webp", "images/mascot-16.webp", "images/mascot-24.webp", "images/mascot-05.webp",
+            "images/mascot-11.webp", "images/mascot-08.webp", "images/mascot-27.webp", "images/mascot-12.webp",
+            "images/mascot-25.webp", "images/mascot-13.webp"
         ];
+        // Special mascot for specific calendar days (keyed by MM-DD). Add more birthdays here anytime.
+        const birthdayMascots = { "06-18": "images/mascot-birthday.webp" }; // Jen's birthday 🎂
 
         let db, auth, users = [], entries = {};
         let selectedUser = "", exercisedToday = null, ateToday = null, waterToday = null;
@@ -642,7 +647,13 @@
             const seasonLastDay = new Date(seasonEnd.getFullYear(), seasonEnd.getMonth(), seasonEnd.getDate() - 1);
             document.getElementById('season-label').textContent = `Current season: ${seasonStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – ${seasonLastDay.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
             const mascot = document.getElementById('mascot-img');
-            if (mascot && mascotImages.length) mascot.src = mascotImages[Math.floor(Math.random() * mascotImages.length)];
+            if (mascot && mascotImages.length) {
+                // Same mascot for everyone each day: index by day-number so it advances daily and cycles.
+                const [yy, mm, dd] = todayString.split('-').map(Number);
+                const dayNumber = Math.floor(Date.UTC(yy, mm - 1, dd) / 86400000);
+                const idx = ((dayNumber % mascotImages.length) + mascotImages.length) % mascotImages.length;
+                mascot.src = birthdayMascots[todayString.slice(5)] || mascotImages[idx];
+            }
             renderForm();
             try {
                 const app = initializeApp(firebaseConfig); db = getFirestore(app); auth = getAuth(app);
