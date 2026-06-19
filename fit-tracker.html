@@ -558,12 +558,16 @@
             const totalMinutes = userEntries.reduce((sum, entry) => sum + (entry.workouts?.reduce((s, w) => s + (w.minutes || 0), 0) || 0), 0);
             // Group by the activity name actually stored, so custom "Other" entries
             // (e.g. "Dog Walk") get their own bar instead of vanishing from the breakdown.
+            // Key case-insensitively (and trimmed) so "Dog Walk", "Dog walk" and "dog walk "
+            // all merge into one bar; keep the first-seen spelling as the display label.
             const activityData = userEntries.flatMap(e => e.workouts || []).reduce((acc, w) => {
-                if (!w.activity) return acc;
-                const data = acc[w.activity] || { count: 0, totalMinutes: 0 };
+                const name = (w.activity || '').trim();
+                if (!name) return acc;
+                const key = name.toLowerCase();
+                const data = acc[key] || { label: name, count: 0, totalMinutes: 0 };
                 data.count += 1;
                 data.totalMinutes += (w.minutes || 0);
-                acc[w.activity] = data;
+                acc[key] = data;
                 return acc;
             }, {});
 
@@ -578,14 +582,14 @@
             
             let tableHtml = '<div class="space-y-4">';
             if (sortedActivities.length > 0) {
-                sortedActivities.forEach(([activity, data]) => {
+                sortedActivities.forEach(([, data]) => {
                     const barWidth = totalMinutes > 0 ? (data.totalMinutes / totalMinutes) * 100 : 0;
                     tableHtml += `
                         <div>
                             <div class="flex items-center text-sm mb-1">
                                 <span class="font-bold text-slate-700 flex items-center">
-                                    <span class="text-lg mr-2">${activityToEmoji[activity] || activityToEmoji['Other'] || '❓'}</span>
-                                    <span>${escapeHtml(activity)}</span>
+                                    <span class="text-lg mr-2">${activityToEmoji[data.label] || activityToEmoji['Other'] || '❓'}</span>
+                                    <span>${escapeHtml(data.label)}</span>
                                     <span class="text-slate-500 text-xs ml-4">x ${data.count}</span>
                                 </span>
                             </div>
