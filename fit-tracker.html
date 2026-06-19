@@ -540,7 +540,10 @@
             statsModal.classList.remove('hidden'); statsModal.classList.add('flex');
             const q = query(collection(db, `artifacts/${appId}/public/data/entries`), where("name", "==", userName));
             const snapshot = await getDocs(q);
-            const userEntries = snapshot.docs.map(doc => doc.data());
+            // Only the current season counts, matching the leaderboard and calendar — past seasons
+            // stay in the calendar/history but don't inflate this summary.
+            const userEntries = snapshot.docs.map(doc => doc.data())
+                .filter(e => e.date >= seasonStartString && e.date <= todayString);
             renderStatsContent(userEntries);
         }
 
