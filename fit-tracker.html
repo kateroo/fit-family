@@ -556,14 +556,14 @@
         
         function renderStatsContent(userEntries) {
             const totalMinutes = userEntries.reduce((sum, entry) => sum + (entry.workouts?.reduce((s, w) => s + (w.minutes || 0), 0) || 0), 0);
-            const activityData = activities.reduce((acc, activity) => {
-                const workouts = userEntries.flatMap(e => e.workouts || []).filter(w => w.activity === activity);
-                if (workouts.length > 0) {
-                    acc[activity] = {
-                        count: workouts.length,
-                        totalMinutes: workouts.reduce((sum, w) => sum + w.minutes, 0)
-                    };
-                }
+            // Group by the activity name actually stored, so custom "Other" entries
+            // (e.g. "Dog Walk") get their own bar instead of vanishing from the breakdown.
+            const activityData = userEntries.flatMap(e => e.workouts || []).reduce((acc, w) => {
+                if (!w.activity) return acc;
+                const data = acc[w.activity] || { count: 0, totalMinutes: 0 };
+                data.count += 1;
+                data.totalMinutes += (w.minutes || 0);
+                acc[w.activity] = data;
                 return acc;
             }, {});
 
@@ -584,7 +584,7 @@
                         <div>
                             <div class="flex items-center text-sm mb-1">
                                 <span class="font-bold text-slate-700 flex items-center">
-                                    <span class="text-lg mr-2">${activityToEmoji[activity] || '❓'}</span>
+                                    <span class="text-lg mr-2">${activityToEmoji[activity] || activityToEmoji['Other'] || '❓'}</span>
                                     <span>${escapeHtml(activity)}</span>
                                     <span class="text-slate-500 text-xs ml-4">x ${data.count}</span>
                                 </span>
